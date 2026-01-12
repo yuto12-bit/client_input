@@ -1,0 +1,178 @@
+// ===== 設定（ここだけ触る）=====
+const SPREADSHEET_ID = '<<あなたのスプレッドシートID>>';
+const SHEET_NAME = '<<タブ名（例：シート1）>>';
+const ADMIN_EMAIL = '<<通知先メール>>';
+
+// ===== 共通 =====
+function getSheet_() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) throw new Error('Sheet not found: ' + SHEET_NAME);
+  return { ss, sheet };
+}
+
+function fmt_(v) {
+  if (Array.isArray(v)) return v.join(', ');
+  return v == null ? '' : String(v);
+}
+
+function doGet() {
+  try {
+    const { ss, sheet } = getSheet_();
+    return ContentService.createTextOutput(JSON.stringify({
+      ok: true,
+      spreadsheetName: ss.getName(),
+      sheetName: sheet.getName(),
+      lastRow: sheet.getLastRow()
+    })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      ok: false,
+      error: String(err)
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doPost(e) {
+  try {
+    if (!e || !e.postData || !e.postData.contents) {
+      throw new Error('No postData.contents');
+    }
+
+    const data = JSON.parse(e.postData.contents);
+    const { sheet } = getSheet_();
+    const ts = new Date();
+
+    const jobTypeText =
+      fmt_(data.jobType) + (data.jobTypeOther ? '(' + fmt_(data.jobTypeOther) + ')' : '');
+
+    const probationDetail =
+      (data.probation === 'あり')
+        ? ('あり: ' + fmt_(data.probationPeriod) + ' ' + fmt_(data.probationCondition))
+        : 'なし';
+
+    const hireImmediatelyText = data.hireImmediately ? 'あり' : 'なし';
+
+    const row = [
+      ts,
+      fmt_(data.companyName),
+      fmt_(data.zipCode),
+      fmt_(data.address),
+      fmt_(data.phone),
+      fmt_(data.email),
+      fmt_(data.area),
+
+      jobTypeText,
+      fmt_(data.qualification),
+
+      fmt_(data.employmentStatus),
+      fmt_(data.salaryType),
+      fmt_(data.salaryMin),
+      fmt_(data.salaryMax),
+      fmt_(data.raise),
+      fmt_(data.bonus),
+      fmt_(data.payDay),
+      fmt_(data.transportAllowance),
+
+      fmt_(data.workTimeStart),
+      fmt_(data.workTimeEnd),
+      fmt_(data.breakTime),
+      fmt_(data.overtime),
+
+      fmt_(data.fixedOvertime),
+      fmt_(data.fixedOvertimeHours),
+      fmt_(data.fixedOvertimeAmount),
+      fmt_(data.fixedOvertimeNote),
+
+      fmt_(data.holiday),
+      fmt_(data.holidayNote),
+
+      fmt_(data.insurance),
+      fmt_(data.insuranceConditionToggle),
+      fmt_(data.insuranceCondition),
+
+      fmt_(data.probation),
+      probationDetail,
+
+      fmt_(data.interviewCount),
+      fmt_(data.resume),
+      hireImmediatelyText,
+
+      fmt_(data.contactPersonName),
+      fmt_(data.contactableTime),
+      fmt_(data.interviewLocationDetail),
+      fmt_(data.interviewAvailability),
+
+      fmt_(data.contractType),
+      fmt_(data.contractStartDate),
+      fmt_(data.contractEndDate),
+      fmt_(data.contractRenewal),
+      fmt_(data.renewalCriteria),
+      fmt_(data.renewalLimit),
+
+      fmt_(data.jobScopeChange),
+      fmt_(data.workplaceChangeScope),
+
+      fmt_(data.jobDescriptionBody),
+      fmt_(data.workRatioNote),
+      fmt_(data.workNoGo),
+
+      fmt_(data.openings),
+      fmt_(data.startTiming),
+      fmt_(data.idealCandidate),
+      fmt_(data.workplaceTags),
+
+      fmt_(data.allowances),
+      fmt_(data.allowanceNote),
+      fmt_(data.smokingMeasure),
+      fmt_(data.smokingNote),
+
+      fmt_(data.gbpExists),
+      fmt_(data.gbpMapUrl),
+      fmt_(data.gbpOwnerGmail),
+      fmt_(data.gbpHasOtherAdmin),
+      fmt_(data.gbpMailReceivable),
+
+      fmt_(data.gbpBusinessType),
+      fmt_(data.gbpShowAddress),
+      fmt_(data.gbpServiceAreas),
+
+      fmt_(data.gbpDisplayName),
+      fmt_(data.gbpPrimaryCategory),
+      fmt_(data.gbpHoursPattern),
+      fmt_(data.gbpHoursNote),
+      fmt_(data.gbpWebsiteUrl),
+
+      fmt_(data.gbpTopServices),
+      fmt_(data.photoFolderUrl),
+      fmt_(data.gbpVideoVerificationPossible)
+    ];
+
+    const before = sheet.getLastRow();
+    sheet.appendRow(row);
+    const after = sheet.getLastRow();
+
+    // 通知（失敗してもシート書き込みは優先させたいので try）
+    try {
+      if (ADMIN_EMAIL) {
+        MailApp.sendEmail({
+          to: ADMIN_EMAIL,
+          subject: `【採用/GBP】追記成功 row=${after}：${fmt_(data.companyName)}`,
+          body:
+            `sheet: ${SHEET_NAME}\n` +
+            `lastRow: ${before} → ${after}\n` +
+            `jobType: ${jobTypeText}\n` +
+            `gbpExists: ${fmt_(data.gbpExists)}\n`
+        });
+      }
+    } catch (_) {}
+
+    return ContentService.createTextOutput(JSON.stringify({ result: 'success', row: after }))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    // ここで止まると原因不明になるので、必ず返す
+    return ContentService.createTextOutput(JSON.stringify({ result: 'error', error: String(err) }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
