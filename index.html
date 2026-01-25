@@ -49,9 +49,19 @@
         <section id="section-1" class="form-section active">
             <h2>1. 基本情報</h2>
             
+            <div class="form-group industry-selector-box">
+                <label>▼ 対象業界（最初に選択してください） <span class="badge-imp">必須</span></label>
+                <select name="targetIndustry" id="targetIndustry">
+                    <option value="construction" selected>建設業</option>
+                    <option value="care">介護・福祉</option>
+                    <option value="auto">自動車整備・板金</option>
+                </select>
+                <p class="note" style="margin-top:5px; color:#0c4a6e;">※ここを変更すると、職種や資格の選択肢が自動で変わります。</p>
+            </div>
+
             <div class="form-group">
                 <label>会社名（正式名称） <span class="badge-imp">重要</span></label>
-                <input type="text" name="companyName" placeholder="例：株式会社〇〇建設" data-critical="true">
+                <input type="text" name="companyName" placeholder="例：株式会社〇〇" data-critical="true">
             </div>
 
             <div class="form-group">
@@ -90,7 +100,7 @@
                     <label><input type="radio" name="employmentStatus" value="正社員"> 正社員</label>
                     <label><input type="radio" name="employmentStatus" value="契約社員"> 契約社員</label>
                     <label><input type="radio" name="employmentStatus" value="アルバイト"> アルバイト</label>
-                    <label><input type="radio" name="employmentStatus" value="業務委託"> 業務委託（一人親方）</label>
+                    <label><input type="radio" name="employmentStatus" value="業務委託"> 業務委託</label>
                 </div>
             </div>
 
@@ -205,31 +215,19 @@
                 <label>募集職種</label>
                 <select id="jobType" name="jobType">
                     <option value="" disabled selected>選択してください</option>
-                    <option value="外構工事">外構工事</option>
-                    <option value="足場工事">足場工事</option>
-                    <option value="塗装工事">塗装工事</option>
-                    <option value="土木作業">土木作業</option>
-                    <option value="解体工事">解体工事</option>
-                    <option value="現場管理">現場管理（施工管理）</option>
-                    <option value="その他">その他</option>
                 </select>
                 <input type="text" id="jobTypeOther" name="jobTypeOther" placeholder="職種名を入力" style="display:none; margin-top:5px;">
             </div>
 
             <div class="form-group">
                 <label>仕事内容の詳細</label>
-                <textarea name="jobDescriptionBody" rows="4" placeholder="例：一般住宅のブロック積みやフェンス取り付け。2〜3名のチームで現場へ。未経験者は手元作業から。"></textarea>
-                <textarea name="workRatioNote" rows="2" placeholder="作業割合（例：外構7割、造成3割）" style="margin-top:5px;"></textarea>
+                <textarea name="jobDescriptionBody" rows="4" placeholder="具体的な業務内容を入力してください。"></textarea>
+                <textarea name="workRatioNote" rows="2" placeholder="作業割合など（任意）" style="margin-top:5px;"></textarea>
             </div>
 
             <div class="form-group">
-                <label>絶対に「やらない」作業</label>
-                <div class="checkbox-group">
-                    <label><input type="checkbox" name="workNoGo" value="高所作業"> 高所作業</label>
-                    <label><input type="checkbox" name="workNoGo" value="営業・勧誘"> 営業・勧誘</label>
-                    <label><input type="checkbox" name="workNoGo" value="重機運転"> 重機運転（資格者のみ）</label>
-                    <label><input type="checkbox" name="workNoGo" value="特になし"> 特になし（何でもやる）</label>
-                </div>
+                <label>絶対に「やらない」作業（NG項目）</label>
+                <div class="checkbox-group" id="workNoGoContainer"></div>
             </div>
 
             <div class="form-group">
@@ -310,14 +308,7 @@
 
             <div class="form-group">
                 <label>応募資格・免許</label>
-                <div class="checkbox-group">
-                    <label><input type="checkbox" name="qualification" value="普通免許（AT可）"> 普通免許（AT可）</label>
-                    <label><input type="checkbox" name="qualification" value="普通免許（AT不可）"> 普通免許（MT必須）</label>
-                    <label><input type="checkbox" name="qualification" value="免許不要"> 免許不要</label>
-                    <label><input type="checkbox" name="qualification" value="学歴不問"> 学歴不問</label>
-                    <label><input type="checkbox" name="qualification" value="未経験歓迎"> 未経験歓迎</label>
-                    <label><input type="checkbox" name="qualification" value="経験者優遇"> 経験者優遇</label>
-                </div>
+                <div class="checkbox-group" id="qualificationContainer"></div>
             </div>
 
             <div class="form-group">
@@ -407,17 +398,11 @@
 
             <div class="form-group">
                 <label>プロフィール設定</label>
-                <input type="text" name="gbpDisplayName" placeholder="マップ上の表示名（例：株式会社〇〇建設）">
+                <input type="text" name="gbpDisplayName" placeholder="マップ上の表示名（例：株式会社〇〇）">
                 <div style="margin-top:5px;">
                     メインカテゴリ：
-                    <select name="gbpPrimaryCategory">
+                    <select id="gbpPrimaryCategory" name="gbpPrimaryCategory">
                         <option value="" disabled selected>選択してください</option>
-                        <option value="建設会社">建設会社</option>
-                        <option value="工務店">工務店</option>
-                        <option value="塗装店">塗装店</option>
-                        <option value="造園業者">造園業者</option>
-                        <option value="解体工事業者">解体工事業者</option>
-                        <option value="その他">その他</option>
                     </select>
                 </div>
                 <div style="margin-top:10px;">
@@ -434,7 +419,7 @@
 
             <div class="form-group">
                 <label>主要サービス（5つまで）</label>
-                <textarea name="gbpTopServices" rows="3" placeholder="例：外壁塗装、屋根修理、雨漏り対応、リフォーム、防水工事"></textarea>
+                <textarea name="gbpTopServices" rows="3" placeholder="例：サービス内容を具体的に記載してください"></textarea>
             </div>
 
             <div class="form-group">

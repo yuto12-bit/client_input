@@ -1,31 +1,141 @@
 // 設定: Google Apps ScriptのWebアプリURL
 const SUBMIT_URL = 'https://script.google.com/macros/s/AKfycbyeuFnAbLogFMUVnEMsRjeZKDbRoMCk3xYpv8Y3oI791Nmnt_iPGLPvQ7WIZN8h91S_Xw/exec'; 
 
+// 業界データ定義
+const industryData = {
+    construction: {
+        jobs: ["外構工事", "足場工事", "塗装工事", "土木作業", "解体工事", "現場管理（施工管理）", "電気工事", "水道工事", "その他"],
+        workNoGo: ["高所作業", "営業・勧誘", "重機運転（資格者のみ）", "特になし（何でもやる）"],
+        qualifications: ["普通免許（AT可）", "普通免許（MT必須）", "準中型・中型免許", "車両系建設機械", "職長・安衛責任者", "学歴不問", "未経験歓迎", "経験者優遇"],
+        gbpCategories: ["建設会社", "工務店", "塗装店", "造園業者", "解体工事業者", "リフォーム業者", "電気工事業者", "水道工事業者", "その他"]
+    },
+    care: {
+        jobs: ["介護職（ヘルパー）", "ケアマネジャー", "看護師・准看護師", "送迎ドライバー", "生活相談員", "調理スタッフ", "理学療法士(PT)/OT", "その他"],
+        workNoGo: ["夜勤", "入浴介助", "送迎業務", "調理業務", "特になし"],
+        qualifications: ["初任者研修（ヘルパー2級）", "実務者研修", "介護福祉士", "社会福祉士", "普通免許（AT可）", "資格なしOK（資格取得支援あり）", "学歴不問", "未経験歓迎"],
+        gbpCategories: ["介護施設", "デイサービスセンター", "訪問介護ステーション", "老人ホーム", "グループホーム", "福祉センター", "その他"]
+    },
+    auto: {
+        jobs: ["自動車整備士", "板金塗装スタッフ", "フロント・受付", "洗車・コーティング", "営業・販売", "ロードサービス隊員", "その他"],
+        workNoGo: ["接客・電話対応", "納車・引取（運転）", "重整備（エンジン脱着等）", "特になし"],
+        qualifications: ["3級自動車整備士", "2級自動車整備士", "1級自動車整備士", "自動車検査員", "普通免許（AT可）", "普通免許（MT必須）", "中型免許（積載車用）", "未経験歓迎"],
+        gbpCategories: ["自動車整備工場", "板金塗装店", "中古車販売店", "自動車修理・メンテナンス", "タイヤショップ", "カーコーティング店", "その他"]
+    }
+};
+
 // グローバル変数
 let pendingStep = null;
+let pendingEmptyFieldNames = []; // モーダル表示中の未入力項目名を一時保持
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadFormData();
-    setupEventListeners();
+    initIndustry(); 
+    loadFormData(); 
+    setupEventListeners(); 
+    setupDynamicListeners(); 
     updateProgress();
-    
-    // 排他制御
-    setupExclusiveNone('insurance', 'なし');
-    setupExclusiveValues('qualification', ['普通免許（AT可）', '普通免許（AT不可）', '免許不要']);
-    setupExclusiveNone('workNoGo', '特になし');
 });
 
+// 初期化：業界データの反映
+function initIndustry() {
+    const savedData = localStorage.getItem('hiringFormData');
+    let target = 'construction';
+    if(savedData) {
+        try {
+            const parsed = JSON.parse(savedData);
+            if(parsed.targetIndustry) target = parsed.targetIndustry;
+        } catch(e) {
+            console.warn('Industry data parse error', e);
+        }
+    }
+    const select = document.getElementById('targetIndustry');
+    if(select) {
+        select.value = target;
+        updateIndustryFields();
+    }
+}
+
+// 業界に合わせて選択肢を書き換える関数
+function updateIndustryFields() {
+    const industry = document.getElementById('targetIndustry').value;
+    const data = industryData[industry];
+    if (!data) return;
+
+    // 1. 募集職種の更新
+    const jobSelect = document.getElementById('jobType');
+    if(jobSelect) {
+        jobSelect.innerHTML = '<option value="" disabled selected>選択してください</option>';
+        data.jobs.forEach(job => {
+            const option = document.createElement('option');
+            option.value = job;
+            option.textContent = job;
+            jobSelect.appendChild(option);
+        });
+    }
+
+    // 2. 「やらない作業」の更新
+    const noGoContainer = document.getElementById('workNoGoContainer');
+    if(noGoContainer) {
+        noGoContainer.innerHTML = '';
+        data.workNoGo.forEach(item => {
+            const label = document.createElement('label');
+            label.innerHTML = `<input type="checkbox" name="workNoGo" value="${item}"> ${item}`;
+            noGoContainer.appendChild(label);
+        });
+    }
+
+    // 3. 応募資格の更新
+    const qualContainer = document.getElementById('qualificationContainer');
+    if(qualContainer) {
+        qualContainer.innerHTML = '';
+        data.qualifications.forEach(item => {
+            const label = document.createElement('label');
+            label.innerHTML = `<input type="checkbox" name="qualification" value="${item}"> ${item}`;
+            qualContainer.appendChild(label);
+        });
+    }
+
+    // 4. GBPカテゴリの更新
+    const gbpSelect = document.getElementById('gbpPrimaryCategory');
+    if(gbpSelect) {
+        gbpSelect.innerHTML = '<option value="" disabled selected>選択してください</option>';
+        data.gbpCategories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat;
+            option.textContent = cat;
+            gbpSelect.appendChild(option);
+        });
+    }
+
+    const jobOtherInput = document.getElementById('jobTypeOther');
+    if(jobOtherInput) jobOtherInput.style.display = 'none';
+}
+
 function setupEventListeners() {
+    // 業界選択の変更監視
+    const industrySelect = document.getElementById('targetIndustry');
+    if (industrySelect) {
+        industrySelect.addEventListener('change', () => {
+            updateIndustryFields();
+            setupDynamicListeners();
+            saveFormData();
+            updateProgress();
+        });
+    }
+
     // 職種「その他」
     const jobTypeSelect = document.getElementById('jobType');
     if (jobTypeSelect) {
         jobTypeSelect.addEventListener('change', (e) => {
             const otherInput = document.getElementById('jobTypeOther');
-            otherInput.style.display = e.target.value === 'その他' ? 'block' : 'none';
+            if(otherInput) otherInput.style.display = e.target.value === 'その他' ? 'block' : 'none';
+            saveFormData();
         });
     }
 
-    // 保険条件トグル
+    // 保険の排他制御（固定要素なのでここで登録）
+    setupExclusiveNone('insurance', 'なし');
+
+    // その他固定要素のイベント
     const insuranceToggle = document.getElementById('insuranceConditionToggle');
     if (insuranceToggle) {
         insuranceToggle.addEventListener('change', (e) => {
@@ -33,20 +143,12 @@ function setupEventListeners() {
             saveFormData();
         });
     }
-
-    // 契約期間トグル
-    const contractRadios = document.querySelectorAll('input[name="contractType"]');
-    contractRadios.forEach(r => r.addEventListener('change', (e) => {
+    document.querySelectorAll('input[name="contractType"]').forEach(r => r.addEventListener('change', (e) => {
         toggleContract(e.target.value === '有期', {save: true});
     }));
-
-    // 固定残業代トグル
-    const overtimeRadios = document.querySelectorAll('input[name="fixedOvertime"]');
-    overtimeRadios.forEach(r => r.addEventListener('change', (e) => {
+    document.querySelectorAll('input[name="fixedOvertime"]').forEach(r => r.addEventListener('change', (e) => {
         toggleFixedOvertime(e.target.value === 'あり', {save: true});
     }));
-
-    // 郵送警告
     const mailSelect = document.getElementById('gbpMailReceivable');
     if (mailSelect) {
         mailSelect.addEventListener('change', (e) => {
@@ -55,89 +157,82 @@ function setupEventListeners() {
         });
     }
 
-    // 保存・進捗更新イベント
+    // フォーム全体の変更監視
     const form = document.getElementById('hiringForm');
     form.addEventListener('change', () => { saveFormData(); updateProgress(); });
     form.addEventListener('input', () => { saveFormData(); updateProgress(); });
     form.addEventListener('submit', handleSubmit);
 }
 
-// UI制御関数群
-function toggleInsuranceCondition(isChecked) {
-    const input = document.getElementById('insuranceCondition');
-    input.style.display = isChecked ? 'block' : 'none';
-    if (!isChecked) input.value = '';
+// 動的要素（書き換わる部分）へのイベント登録
+function setupDynamicListeners() {
+    // 資格の排他制御は削除済み（複数選択OK）
+
+    // NG作業の排他制御
+    setupExclusiveNone('workNoGo', '特になし');
+    setupExclusiveNone('workNoGo', '特になし（何でもやる）');
 }
 
+// UI制御関数
+function toggleInsuranceCondition(isChecked) {
+    const input = document.getElementById('insuranceCondition');
+    if(input) {
+        input.style.display = isChecked ? 'block' : 'none';
+        if (!isChecked) input.value = '';
+    }
+}
 window.toggleProbation = function(isYes, opts = { save: true }) {
     const wrap = document.getElementById('probationDetails');
-    wrap.style.display = isYes ? 'block' : 'none';
-    if (!isYes) {
-        const period = document.querySelector('input[name="probationPeriod"]');
-        const cond = document.querySelector('input[name="probationCondition"]');
-        if(period) period.value = ''; 
-        if(cond) cond.value = '';
+    if(wrap) {
+        wrap.style.display = isYes ? 'block' : 'none';
+        if (!isYes) {
+            const p = document.querySelector('input[name="probationPeriod"]');
+            const c = document.querySelector('input[name="probationCondition"]');
+            if(p) p.value=''; if(c) c.value='';
+        }
     }
     if (opts.save) saveFormData();
     updateProgress();
 };
-
 window.toggleContract = function(isLimited, opts = { save: true }) {
     const wrap = document.getElementById('contractDetails');
-    wrap.style.display = isLimited ? 'block' : 'none';
-    if (!isLimited) {
-        const start = document.querySelector('input[name="contractStartDate"]');
-        const end = document.querySelector('input[name="contractEndDate"]');
-        if(start) start.value = '';
-        if(end) end.value = '';
+    if(wrap) {
+        wrap.style.display = isLimited ? 'block' : 'none';
+        if (!isLimited) {
+            const s = document.querySelector('input[name="contractStartDate"]');
+            const e = document.querySelector('input[name="contractEndDate"]');
+            if(s) s.value=''; if(e) e.value='';
+        }
     }
     if (opts.save) saveFormData();
     updateProgress();
 };
-
 window.toggleFixedOvertime = function(has, opts = { save: true }) {
     const wrap = document.getElementById('overtimeDetails');
-    wrap.style.display = has ? 'block' : 'none';
-    if (!has) {
-        const hours = document.querySelector('input[name="fixedOvertimeHours"]');
-        const amount = document.querySelector('input[name="fixedOvertimeAmount"]');
-        if(hours) hours.value = ''; 
-        if(amount) amount.value = '';
+    if(wrap) {
+        wrap.style.display = has ? 'block' : 'none';
+        if (!has) {
+            const h = document.querySelector('input[name="fixedOvertimeHours"]');
+            const a = document.querySelector('input[name="fixedOvertimeAmount"]');
+            if(h) h.value=''; if(a) a.value='';
+        }
     }
     if (opts.save) saveFormData();
     updateProgress();
 };
-
-// GBP条件分岐
 window.toggleGbpInput = function(exists, opts = { save: true }) {
     const wrap = document.getElementById('gbpExistingDetails');
     if (wrap) wrap.style.display = exists ? 'block' : 'none';
-
-    const urlInput = document.querySelector('input[name="gbpMapUrl"]');
-    if (!exists && urlInput) {
-        urlInput.value = '';
-    }
+    const u = document.querySelector('input[name="gbpMapUrl"]');
+    if (!exists && u) u.value = '';
     if (opts.save) saveFormData();
     updateProgress();
 };
 
-// 排他制御
-function setupExclusiveValues(groupName, exclusiveValues) {
+// 排他制御ロジック
+function setupExclusiveNone(groupName, noneValue) {
     const boxes = [...document.querySelectorAll(`input[name="${groupName}"]`)];
-    const set = new Set(exclusiveValues);
-    boxes.forEach(b => {
-        b.addEventListener('change', () => {
-            if (!set.has(b.value) || !b.checked) return;
-            boxes.forEach(x => {
-                if (x !== b && set.has(x.value)) x.checked = false;
-            });
-            saveFormData();
-            updateProgress();
-        });
-    });
-}
-function setupExclusiveNone(groupName, noneValue='なし') {
-    const boxes = [...document.querySelectorAll(`input[name="${groupName}"]`)];
+    if (boxes.length === 0) return;
     const noneBox = boxes.find(b => b.value === noneValue);
     if (!noneBox) return;
     boxes.forEach(b => {
@@ -152,66 +247,51 @@ function setupExclusiveNone(groupName, noneValue='なし') {
     });
 }
 
-// 進捗計算（%表示）
+// 進捗バー
 function updateProgress() {
     const activeSection = document.querySelector('.form-section.active');
     if (!activeSection) return;
-
-    // 現在表示されている入力項目を収集
     const inputs = [...activeSection.querySelectorAll('input, select, textarea')].filter(el => {
-        // 非表示の親要素を持つ場合は除外
         return el.offsetParent !== null && el.type !== 'hidden';
     });
-
     if (inputs.length === 0) return;
-
     let filledCount = 0;
     const uniqueNames = new Set(inputs.map(i => i.name));
-    
     uniqueNames.forEach(name => {
         const els = document.querySelectorAll(`[name="${name}"]`);
-        // 可視状態のものだけチェック
         const visibleEls = [...els].filter(el => el.offsetParent !== null);
         if (visibleEls.length === 0) return;
-
         let isFilled = false;
-        const type = visibleEls[0].type;
-
-        if (type === 'radio' || type === 'checkbox') {
+        if (visibleEls[0].type === 'radio' || visibleEls[0].type === 'checkbox') {
             isFilled = visibleEls.some(el => el.checked);
         } else {
             isFilled = visibleEls.some(el => el.value.trim() !== '');
         }
-
         if (isFilled) filledCount++;
     });
-
     const percent = Math.round((filledCount / uniqueNames.size) * 100);
-    document.getElementById('progressPercent').textContent = `${percent}%`;
-    document.getElementById('progressFill').style.width = `${percent}%`;
+    const pText = document.getElementById('progressPercent');
+    const pFill = document.getElementById('progressFill');
+    if(pText) pText.textContent = `${percent}%`;
+    if(pFill) pFill.style.width = `${percent}%`;
 }
 
-// ステップ移動（ソフトバリデーション付き）
+// ページ遷移
 window.tryNextStep = function(targetStep) {
     const currentStep = targetStep - 1;
     const emptyFields = getEmptyFields(currentStep);
-
     if (emptyFields.length > 0) {
-        // モーダル表示
         showModal(emptyFields, targetStep);
     } else {
-        // そのまま進む
         goToStep(targetStep);
     }
 };
-
-window.prevStep = function(stepNum) {
-    goToStep(stepNum);
-};
+window.prevStep = function(stepNum) { goToStep(stepNum); };
 
 function goToStep(stepNum) {
     document.querySelectorAll('.form-section').forEach(el => el.classList.remove('active'));
-    document.getElementById(`section-${stepNum}`).classList.add('active');
+    const ts = document.getElementById(`section-${stepNum}`);
+    if(ts) ts.classList.add('active');
     document.querySelectorAll('.step').forEach((el, index) => {
         if (index + 1 === stepNum) el.classList.add('active');
         else el.classList.remove('active');
@@ -220,54 +300,93 @@ function goToStep(stepNum) {
     updateProgress();
 }
 
-// 未入力項目の検出
+// 【修正必須対応】未入力項目の検出
+// ラベルの重複除去はここでは行わず、全未入力要素を返す
 function getEmptyFields(stepNum) {
     const section = document.getElementById(`section-${stepNum}`);
+    if(!section) return [];
     const inputs = [...section.querySelectorAll('input, select, textarea')].filter(el => el.offsetParent !== null && el.type !== 'hidden');
     const uniqueNames = new Set(inputs.map(i => i.name));
-    const emptyList = [];
+    const rawEmptyList = [];
 
     uniqueNames.forEach(name => {
         const els = [...document.querySelectorAll(`[name="${name}"]`)].filter(el => el.offsetParent !== null);
         if (els.length === 0) return;
-
         let isFilled = false;
         if (els[0].type === 'radio' || els[0].type === 'checkbox') {
             isFilled = els.some(el => el.checked);
         } else {
             isFilled = els.some(el => el.value.trim() !== '');
         }
-
+        
         if (!isFilled) {
-            // ラベル取得
             let label = "不明な項目";
             const parent = els[0].closest('.form-group');
             if (parent) {
                 const labelEl = parent.querySelector('label');
                 if (labelEl) label = labelEl.childNodes[0].textContent.trim();
             }
-            emptyList.push(label);
+            rawEmptyList.push({ name: name, label: label });
         }
     });
-    return emptyList;
+
+    return rawEmptyList; // 重複ありのまま全件返す
 }
 
-// モーダル制御
+// 【修正必須対応】モーダル処理
 function showModal(fields, targetStepNum) {
     const modal = document.getElementById('confirmModal');
     const list = document.getElementById('modalList');
-    list.innerHTML = fields.map(f => `<div>• ${f}</div>`).join('');
+    
+    // 1. スキップ対象のnameは「重複ありの全件」を保持する
+    pendingEmptyFieldNames = fields.map(f => f.name);
+    
+    // 2. モーダル表示用だけラベル重複を除去する
+    const seenLabels = new Set();
+    const uniqueLabels = [];
+    fields.forEach(f => {
+        if (!seenLabels.has(f.label)) {
+            seenLabels.add(f.label);
+            uniqueLabels.push(f.label);
+        }
+    });
+
+    if(list) list.innerHTML = uniqueLabels.map(label => `<div>• ${label}</div>`).join('');
+    
     pendingStep = targetStepNum;
-    modal.style.display = 'flex';
+    if(modal) modal.style.display = 'flex';
 }
 
 function closeModal() {
-    document.getElementById('confirmModal').style.display = 'none';
+    const modal = document.getElementById('confirmModal');
+    if(modal) modal.style.display = 'none';
     pendingStep = null;
+    pendingEmptyFieldNames = [];
 }
 
+// 安全なlocalStorage読み込みヘルパー
+function getSafeStoredList(key) {
+    try {
+        const s = localStorage.getItem(key);
+        return s ? JSON.parse(s) : [];
+    } catch (e) {
+        console.warn(`Error parsing ${key} from localStorage`, e);
+        return [];
+    }
+}
+
+// 「後で確認」確定時の永続化
 function confirmNext() {
     if (pendingStep) {
+        // 安全に読み込み
+        let skippedList = getSafeStoredList('hiringFormSkipped');
+        
+        // 今回スキップした項目を追加（重複排除）
+        skippedList = [...new Set([...skippedList, ...pendingEmptyFieldNames])];
+        
+        // 保存
+        localStorage.setItem('hiringFormSkipped', JSON.stringify(skippedList));
+        
         goToStep(pendingStep);
         closeModal();
     }
@@ -294,95 +413,82 @@ function saveFormData() {
 }
 
 function loadFormData() {
-    const dataStr = localStorage.getItem('hiringFormData');
-    if (!dataStr) return;
-    const data = JSON.parse(dataStr);
-    const form = document.getElementById('hiringForm');
+    try {
+        const dataStr = localStorage.getItem('hiringFormData');
+        if (!dataStr) return;
+        const data = JSON.parse(dataStr);
+        const form = document.getElementById('hiringForm');
 
-    Object.entries(data).forEach(([name, value]) => {
-        const els = form.querySelectorAll(`[name="${name}"]`);
-        if (!els.length) return;
+        Object.entries(data).forEach(([name, value]) => {
+            if (name === 'targetIndustry') return;
+            const els = form.querySelectorAll(`[name="${name}"]`);
+            if (!els.length) return;
+            if (Array.isArray(value)) { 
+                els.forEach(el => { el.checked = value.includes(el.value); });
+                return;
+            }
+            if (els[0].type === 'radio') {
+                els.forEach(el => { el.checked = (el.value === value); });
+                return;
+            }
+            if (els[0]) els[0].value = value;
+        });
 
-        if (Array.isArray(value)) { 
-            els.forEach(el => { el.checked = value.includes(el.value); });
-            return;
-        }
-        if (els[0].type === 'radio') {
-            els.forEach(el => { el.checked = (el.value === value); });
-            return;
-        }
-        if (els[0]) els[0].value = value;
-    });
-
-    // UI状態復元
-    const jobType = document.getElementById('jobType');
-    if (jobType && jobType.value === 'その他') document.getElementById('jobTypeOther').style.display = 'block';
-
-    const insToggle = document.getElementById('insuranceConditionToggle');
-    if (insToggle) toggleInsuranceCondition(insToggle.checked);
-
-    const probChecked = document.querySelector('input[name="probation"]:checked');
-    if (probChecked) toggleProbation(probChecked.value === 'あり', { save: false });
-
-    const contractChecked = document.querySelector('input[name="contractType"]:checked');
-    if (contractChecked) toggleContract(contractChecked.value === '有期', { save: false });
-
-    const overtimeChecked = document.querySelector('input[name="fixedOvertime"]:checked');
-    if (overtimeChecked) toggleFixedOvertime(overtimeChecked.value === 'あり', { save: false });
-
-    const gbpChecked = document.querySelector('input[name="gbpExists"]:checked');
-    if (gbpChecked) toggleGbpInput(gbpChecked.value === 'はい', { save: false });
+        const jobType = document.getElementById('jobType');
+        const jobOther = document.getElementById('jobTypeOther');
+        if (jobType && jobType.value === 'その他' && jobOther) jobOther.style.display = 'block';
+        const insToggle = document.getElementById('insuranceConditionToggle');
+        if (insToggle) toggleInsuranceCondition(insToggle.checked);
+        const probChecked = document.querySelector('input[name="probation"]:checked');
+        if (probChecked) toggleProbation(probChecked.value === 'あり', { save: false });
+        const contractChecked = document.querySelector('input[name="contractType"]:checked');
+        if (contractChecked) toggleContract(contractChecked.value === '有期', { save: false });
+        const overtimeChecked = document.querySelector('input[name="fixedOvertime"]:checked');
+        if (overtimeChecked) toggleFixedOvertime(overtimeChecked.value === 'あり', { save: false });
+        const gbpChecked = document.querySelector('input[name="gbpExists"]:checked');
+        if (gbpChecked) toggleGbpInput(gbpChecked.value === 'はい', { save: false });
+    } catch(e) {
+        console.warn('Error loading form data', e);
+    }
 }
 
 async function handleSubmit(e) {
     e.preventDefault();
-    
-    // 最終ステップの未入力チェック
-    const emptyFields = getEmptyFields(5);
+    const form = e.target;
     
     // 重要項目の最終チェック
-    const form = e.target;
     const criticals = form.querySelectorAll('[data-critical="true"]');
     let criticalError = false;
-    criticals.forEach(el => {
-        if (!el.value.trim()) criticalError = true;
-    });
-
+    criticals.forEach(el => { if (!el.value.trim()) criticalError = true; });
     if (criticalError) {
         alert('【重要】連絡先などの必須項目が未入力です。確認してください。');
         return;
     }
 
-    // 未入力でも許可して送信
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
     btn.textContent = '送信中...';
 
+    // スキップされた項目のリストを安全に取得
+    const skippedList = getSafeStoredList('hiringFormSkipped');
+
     const formData = new FormData(e.target);
     const jsonData = {};
-    
-    // データ整形：未入力は自動で「不明」にする
     for (let [key, value] of formData.entries()) {
         if (jsonData[key]) {
             if (!Array.isArray(jsonData[key])) jsonData[key] = [jsonData[key]];
             jsonData[key].push(value);
-        } else { 
-            jsonData[key] = value; 
-        }
+        } else { jsonData[key] = value; }
     }
-
-    // ★重要改修: 配列データをカンマ区切りの文字列に変換
-    // これにより、複数選択チェックボックスの値をGASが正しく受け取れるようになります
+    
     Object.keys(jsonData).forEach(key => {
-        if (Array.isArray(jsonData[key])) {
-            jsonData[key] = jsonData[key].join(', ');
-        }
+        if (Array.isArray(jsonData[key])) jsonData[key] = jsonData[key].join(', ');
     });
 
-    // 全フィールドをチェックして空なら補完
+    // 空欄補完（スキップリストにある項目、または可視状態の未入力項目）
     [...form.elements].forEach(el => {
         if (el.name && !jsonData[el.name] && el.type !== 'submit' && el.type !== 'button') {
-            if (el.offsetParent !== null) {
+            if (skippedList.includes(el.name) || el.offsetParent !== null) {
                 jsonData[el.name] = "【不明・後で確認】";
             } else {
                 jsonData[el.name] = "";
@@ -394,14 +500,13 @@ async function handleSubmit(e) {
         await fetch(SUBMIT_URL, {
             method: 'POST',
             body: JSON.stringify(jsonData),
-            headers: {
-                'Content-Type': 'text/plain;charset=utf-8' 
-            },
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             mode: 'no-cors',
             keepalive: true
         });
         localStorage.removeItem('hiringFormData');
-        window.location.href = 'thanks.html';
+        localStorage.removeItem('hiringFormSkipped'); 
+        window.location.href = 'thanks.html'; 
     } catch (error) {
         alert('送信エラーです。お電話でご連絡ください。');
         btn.disabled = false;

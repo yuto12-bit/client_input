@@ -136,6 +136,24 @@ h2 {
 /* Form Elements */
 .form-group { margin-bottom: 25px; }
 
+/* 業界選択ボックス */
+.industry-selector-box {
+    background-color: var(--accent-color);
+    border: 2px solid var(--primary-color);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+.industry-selector-box label {
+    color: var(--primary-color);
+    font-size: 1.05rem;
+}
+.industry-selector-box select {
+    border: 2px solid var(--primary-color);
+    background-color: var(--white);
+    font-weight: bold;
+}
+
 label {
     display: block;
     margin-bottom: 8px;
@@ -259,7 +277,8 @@ input[type="radio"], input[type="checkbox"] {
 .btn-center-wrapper .btn {
     display: inline-block;
     width: 100%;
-    max-width: 350px; /* PCで見ても間延びしない幅 */
+    max-width: 350px;
+    margin: 0 auto;
 }
 
 .btn-next, .btn-submit {
