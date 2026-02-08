@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>【公式】採用・GBP開通ヒアリングシート</title>
+    <title>【公式】採用・GBP開通ヒアリングシート | REMEDORA</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
 
 <div class="sticky-progress">
     <div class="progress-info">
-        <span class="progress-label">入力進捗</span>
+        <span class="progress-label">PROGRESS</span>
         <span class="progress-percent" id="progressPercent">0%</span>
     </div>
     <div class="progress-track">
@@ -27,14 +27,17 @@
     </div>
 </header>
 
-<main class="container" style="padding-top: 10px;">
-    <div class="intro-box">
+<main class="container" style="padding-top: 40px;">
+    <div class="intro-box glass-panel">
         <p class="intro-text">
-    所要時間は<strong>約5〜10分</strong>です。<br>
-    <strong>分からない項目は「空欄」のままでOKです。</strong><br>
-    未入力の箇所は、後ほどお電話、もしくは<strong>撮影当日に現地で</strong>伺い、こちらで代筆します。<br>
-    <span style="font-size:0.9em">※すべての項目が埋まっていなくても送信可能です。</span>
-</p>
+          所要時間は<strong>約5〜10分</strong>です。<br>
+          <strong>分からない項目は「空欄」のままでOKです。</strong><br>
+          未入力の箇所は、後ほど<strong>電話・LINE・メール</strong>のいずれかで確認し、こちらで補完します。<br>
+          <strong>画像・ロゴ・写真などの素材は公式LINEで回収</strong>します（このフォームでは回収しません）。<br>
+          <span class="text-muted" style="font-size:0.85em; display:block; margin-top:10px;">
+          ※すべての項目が埋まっていなくても送信可能です。
+          </span>
+        </p>
     </div>
 
     <div class="step-indicator-bar">
@@ -46,7 +49,7 @@
     </div>
 
     <form id="hiringForm">
-        <section id="section-1" class="form-section active">
+        <section id="section-1" class="form-section glass-panel active">
             <h2>1. 基本情報</h2>
             
             <div class="form-group industry-selector-box">
@@ -56,7 +59,7 @@
                     <option value="care">介護・福祉</option>
                     <option value="auto">自動車整備・板金</option>
                 </select>
-                <p class="note" style="margin-top:5px; color:#0c4a6e;">※ここを変更すると、職種や資格の選択肢が自動で変わります。</p>
+                <p class="note">※ここを変更すると、職種や資格の選択肢が自動で変わります。</p>
             </div>
 
             <div class="form-group">
@@ -65,10 +68,20 @@
             </div>
 
             <div class="form-group">
-                <label>ハガキが届く正確な住所 <span class="badge-imp">重要</span></label>
-                <input type="text" name="zipCode" placeholder="郵便番号（例：123-4567）" inputmode="numeric" data-critical="true">
-                <input type="text" name="address" placeholder="住所（ビル名・部屋番号まで）" style="margin-top:5px;" data-critical="true">
-                <p class="note">※Googleマップのオーナー認証ハガキが届く場所</p>
+                <label>Googleマップ認証状況 <span class="badge-imp">必須</span></label>
+                <div class="radio-group">
+                    <label><input type="radio" name="gbpVerifiedStatus" value="未完了・不明" checked onclick="toggleAddressArea(false)"> 未完了・不明（ハガキ受取が必要）</label>
+                    <label><input type="radio" name="gbpVerifiedStatus" value="完了済み" onclick="toggleAddressArea(true)"> 完了済み（ハガキ不要）</label>
+                </div>
+            </div>
+
+            <div id="addressInputArea">
+                <div class="form-group">
+                    <label>ハガキが届く正確な住所 <span class="badge-imp">重要</span></label>
+                    <input type="text" name="zipCode" placeholder="郵便番号（例：123-4567）" inputmode="numeric" data-critical="true">
+                    <input type="text" name="address" placeholder="住所（ビル名・部屋番号まで）" style="margin-top:15px;" data-critical="true">
+                    <p class="note">※Googleマップのオーナー認証ハガキが届く場所</p>
+                </div>
             </div>
 
             <div class="form-group">
@@ -87,11 +100,11 @@
             </div>
 
             <div class="btn-center-wrapper">
-                <button type="button" class="btn btn-next" onclick="tryNextStep(2)">次へ（条件・契約）</button>
+                <button type="button" class="btn btn-primary btn-full" onclick="tryNextStep(2)">次へ（条件・契約）</button>
             </div>
         </section>
 
-        <section id="section-2" class="form-section">
+        <section id="section-2" class="form-section glass-panel">
             <h2>2. 労働条件・契約・お金</h2>
 
             <div class="form-group">
@@ -112,21 +125,21 @@
                     <option value="月給">月給</option>
                     <option value="時給">時給</option>
                 </select>
-                <div class="input-row" style="margin-top:5px;">
+                <div class="input-row" style="margin-top:15px;">
                     <input type="number" id="salaryMin" name="salaryMin" placeholder="最低">
                     <span>〜</span>
                     <input type="number" id="salaryMax" name="salaryMax" placeholder="最高">
                 </div>
-                <div class="checkbox-group" style="margin-top:10px;">
-                    <label>昇給：<select name="raise"><option value="あり">あり</option><option value="あり（業績による）">あり（業績による）</option><option value="なし">なし</option></select></label>
-                    <label>賞与：<select name="bonus"><option value="あり">あり</option><option value="あり（業績による）">あり（業績による）</option><option value="なし">なし</option></select></label>
+                <div class="checkbox-group" style="margin-top:20px;">
+                    <label class="compact-label">昇給：<select name="raise" class="inline-select"><option value="あり">あり</option><option value="あり（業績による）">あり（業績による）</option><option value="なし">なし</option></select></label>
+                    <label class="compact-label">賞与：<select name="bonus" class="inline-select"><option value="あり">あり</option><option value="あり（業績による）">あり（業績による）</option><option value="なし">なし</option></select></label>
                 </div>
             </div>
 
             <div class="form-group">
                 <label>支払日・交通費</label>
                 <input type="text" name="payDay" placeholder="例：月末締め翌月15日払い">
-                <input type="text" name="transportAllowance" placeholder="例：全額支給、月1万円まで、なし 等" style="margin-top:5px;">
+                <input type="text" name="transportAllowance" placeholder="例：全額支給、月1万円まで、なし 等" style="margin-top:15px;">
             </div>
 
             <div class="form-group">
@@ -135,15 +148,15 @@
                     <label><input type="radio" name="contractType" value="無期" checked onclick="toggleContract(false)"> 無期雇用（期間の定めなし）</label>
                     <label><input type="radio" name="contractType" value="有期" onclick="toggleContract(true)"> 有期雇用（期間の定めあり）</label>
                 </div>
-                <div id="contractDetails" style="display:none; margin-top:10px; padding:10px; background:#f9f9f9;">
+                <div id="contractDetails" class="details-box" style="display:none;">
                     <div class="input-row">
                         <input type="date" name="contractStartDate"><span>〜</span><input type="date" name="contractEndDate">
                     </div>
-                    <div style="margin-top:10px;">
+                    <div style="margin-top:15px;">
                         契約更新：<select name="contractRenewal"><option value="あり">あり</option><option value="なし">なし</option></select>
                     </div>
-                    <input type="text" name="renewalCriteria" placeholder="更新基準（例：勤務態度、会社の経営状況）" style="margin-top:5px;">
-                    <input type="text" name="renewalLimit" placeholder="更新上限（例：通算5年まで、なし）" style="margin-top:5px;">
+                    <input type="text" name="renewalCriteria" placeholder="更新基準（例：勤務態度、会社の経営状況）" style="margin-top:15px;">
+                    <input type="text" name="renewalLimit" id="renewalLimit" placeholder="更新上限（例：通算5年まで、なし）" style="margin-top:15px;">
                 </div>
             </div>
 
@@ -154,7 +167,7 @@
                     <option value="なし（変更なし）">なし（変更なし）</option>
                     <option value="あり（会社の定める業務）">あり（会社の定める業務）</option>
                 </select>
-                <p class="sub-label" style="margin-top:5px;">就業場所の変更：</p>
+                <p class="sub-label" style="margin-top:15px;">就業場所の変更：</p>
                 <select name="workplaceChangeScope">
                     <option value="なし（変更なし）">なし（変更なし）</option>
                     <option value="あり（会社の定める営業所）">あり（会社の定める営業所）</option>
@@ -166,26 +179,26 @@
                 <div class="input-row">
                     <input type="time" name="workTimeStart" value="08:00"><span>〜</span><input type="time" name="workTimeEnd" value="17:00">
                 </div>
-                <div style="margin-top:5px;">
+                <div style="margin-top:15px;">
                     休憩：<select name="breakTime"><option value="60">60分</option><option value="90">90分</option><option value="120">120分</option></select>
                 </div>
-                <div style="margin-top:5px;">
+                <div style="margin-top:15px;">
                     残業目安：<select name="overtime"><option value="ほぼなし">ほぼなし</option><option value="月10h以内">月10h以内</option><option value="月20h以内">月20h以内</option><option value="多め">多め</option></select>
                 </div>
                 
-                <p class="sub-label" style="margin-top:10px;">固定残業代（みなし残業）：</p>
+                <p class="sub-label" style="margin-top:20px;">固定残業代（みなし残業）：</p>
                 <div class="radio-group">
                     <label><input type="radio" name="fixedOvertime" value="なし" checked onclick="toggleFixedOvertime(false)"> なし</label>
                     <label><input type="radio" name="fixedOvertime" value="あり" onclick="toggleFixedOvertime(true)"> あり</label>
                 </div>
-                <div id="overtimeDetails" style="display:none; margin-top:10px; padding:10px; background:#f9f9f9;">
+                <div id="overtimeDetails" class="details-box" style="display:none;">
                     <div class="input-row">
                         <input type="number" name="fixedOvertimeHours" placeholder="時間（例:20）"> <span>時間分</span>
                     </div>
-                    <div class="input-row" style="margin-top:5px;">
+                    <div class="input-row" style="margin-top:15px;">
                         <input type="number" name="fixedOvertimeAmount" placeholder="金額（例:30000）"> <span>円を含む</span>
                     </div>
-                    <input type="text" name="fixedOvertimeNote" placeholder="超過分別途支給など" style="margin-top:5px;">
+                    <input type="text" name="fixedOvertimeNote" placeholder="超過分別途支給など" style="margin-top:15px;">
                 </div>
             </div>
 
@@ -199,16 +212,16 @@
                     <option value="シフト制">シフト制</option>
                     <option value="その他">その他</option>
                 </select>
-                <input type="text" name="holidayNote" placeholder="補足（例：雨天休み、GW・夏季・年末年始）" style="margin-top:5px;">
+                <input type="text" name="holidayNote" placeholder="補足（例：雨天休み、GW・夏季・年末年始）" style="margin-top:15px;">
             </div>
 
             <div class="btn-group">
-                <button type="button" class="btn btn-prev" onclick="prevStep(1)">戻る</button>
-                <button type="button" class="btn btn-next" onclick="tryNextStep(3)">次へ<br>（仕事/選考）</button>
+                <button type="button" class="btn btn-outline" onclick="prevStep(1)">戻る</button>
+                <button type="button" class="btn btn-primary" onclick="tryNextStep(3)">次へ<br>（仕事/選考）</button>
             </div>
         </section>
 
-        <section id="section-3" class="form-section">
+        <section id="section-3" class="form-section glass-panel">
             <h2>3. 仕事の詳細・選考</h2>
 
             <div class="form-group">
@@ -216,13 +229,13 @@
                 <select id="jobType" name="jobType">
                     <option value="" disabled selected>選択してください</option>
                 </select>
-                <input type="text" id="jobTypeOther" name="jobTypeOther" placeholder="職種名を入力" style="display:none; margin-top:5px;">
+                <input type="text" id="jobTypeOther" name="jobTypeOther" placeholder="職種名を入力" style="display:none; margin-top:15px;">
             </div>
 
             <div class="form-group">
                 <label>仕事内容の詳細</label>
                 <textarea name="jobDescriptionBody" rows="4" placeholder="具体的な業務内容を入力してください。"></textarea>
-                <textarea name="workRatioNote" rows="2" placeholder="作業割合など（任意）" style="margin-top:5px;"></textarea>
+                <textarea name="workRatioNote" rows="2" placeholder="作業割合など（任意）" style="margin-top:15px;"></textarea>
             </div>
 
             <div class="form-group">
@@ -235,48 +248,48 @@
                 <div class="input-row">
                     募集人数：<input type="number" name="openings" placeholder="例:2" style="width:50%;"> 名
                 </div>
-                <div class="input-row" style="margin-top:5px;">
+                <div class="input-row" style="margin-top:15px;">
                     入社時期：<select name="startTiming"><option value="即日">即日</option><option value="相談の上">相談の上</option><option value="来月から">来月から</option></select>
                 </div>
-                <textarea name="idealCandidate" rows="3" placeholder="求める人材（例：挨拶ができる方、体力に自信がある方）" style="margin-top:10px;"></textarea>
+                <textarea name="idealCandidate" rows="3" placeholder="求める人材（例：挨拶ができる方、体力に自信がある方）" style="margin-top:20px;"></textarea>
             </div>
 
             <div class="form-group">
                 <label>選考について</label>
                 <input type="text" name="contactPersonName" placeholder="採用担当者名（例：山田）">
-                <select name="contactableTime" style="margin-top:5px;">
+                <select name="contactableTime" style="margin-top:15px;">
                     <option value="いつでも可">いつでも可</option>
                     <option value="平日9時〜17時">平日9時〜17時</option>
                     <option value="17時以降">17時以降</option>
                     <option value="日中（現場による）">日中（現場による）</option>
                 </select>
-                <input type="text" name="interviewLocationDetail" placeholder="面接場所（例：事務所、または現場近くのカフェ）" style="margin-top:5px;">
+                <input type="text" name="interviewLocationDetail" placeholder="面接場所（例：事務所、または現場近くのカフェ）" style="margin-top:15px;">
                 
-                <p class="sub-label" style="margin-top:10px;">面接可能枠（複数選択）：</p>
+                <p class="sub-label" style="margin-top:20px;">面接可能枠（複数選択）：</p>
                 <div class="checkbox-group">
                     <label><input type="checkbox" name="interviewAvailability" value="平日日中"> 平日日中</label>
                     <label><input type="checkbox" name="interviewAvailability" value="平日夕方以降"> 平日夕方以降</label>
                     <label><input type="checkbox" name="interviewAvailability" value="土日祝"> 土日祝</label>
                 </div>
                 
-                <div class="select-row" style="margin-top:10px;">
+                <div class="select-row" style="margin-top:20px;">
                     面接回数：<select name="interviewCount"><option value="1回">1回</option><option value="2回">2回</option></select>
                 </div>
-                <div class="select-row" style="margin-top:5px;">
+                <div class="select-row" style="margin-top:15px;">
                     履歴書：<select name="resume"><option value="必要">必要</option><option value="不要">不要</option><option value="あれば">あれば尚可</option></select>
                 </div>
-                <div class="checkbox-group" style="margin-top:5px;">
+                <div class="checkbox-group" style="margin-top:15px;">
                     <label><input type="checkbox" name="hireImmediately" value="あり"> 即日採用あり</label>
                 </div>
             </div>
 
             <div class="btn-group">
-                <button type="button" class="btn btn-prev" onclick="prevStep(2)">戻る</button>
-                <button type="button" class="btn btn-next" onclick="tryNextStep(4)">次へ<br>（福利厚生）</button>
+                <button type="button" class="btn btn-outline" onclick="prevStep(2)">戻る</button>
+                <button type="button" class="btn btn-primary" onclick="tryNextStep(4)">次へ<br>（福利厚生）</button>
             </div>
         </section>
 
-        <section id="section-4" class="form-section">
+        <section id="section-4" class="form-section glass-panel">
             <h2>4. 福利厚生・法的審査</h2>
 
             <div class="form-group">
@@ -288,9 +301,9 @@
                     <label><input type="checkbox" name="insurance" value="労災保険"> 労災保険</label>
                     <label><input type="checkbox" name="insurance" value="なし"> なし（未加入）</label>
                 </div>
-                <div style="margin-top:10px;">
-                    <label><input type="checkbox" id="insuranceConditionToggle" name="insuranceConditionToggle"> 加入条件あり（正社員のみ等）</label>
-                    <input type="text" id="insuranceCondition" name="insuranceCondition" placeholder="条件を入力" style="display:none; margin-top:5px;">
+                <div style="margin-top:15px;">
+                    <label class="custom-check"><input type="checkbox" id="insuranceConditionToggle" name="insuranceConditionToggle"> 加入条件あり（正社員のみ等）</label>
+                    <input type="text" id="insuranceCondition" name="insuranceCondition" placeholder="条件を入力" style="display:none; margin-top:15px;">
                 </div>
             </div>
 
@@ -300,9 +313,9 @@
                     <label><input type="radio" name="probation" value="なし" onclick="toggleProbation(false)" checked> なし</label>
                     <label><input type="radio" name="probation" value="あり" onclick="toggleProbation(true)"> あり</label>
                 </div>
-                <div id="probationDetails" style="display:none; margin-top:10px; padding:10px; background:#f9f9f9;">
+                <div id="probationDetails" class="details-box" style="display:none;">
                     <input type="text" name="probationPeriod" placeholder="期間（例：3ヶ月）">
-                    <input type="text" name="probationCondition" placeholder="期間中の条件（例：日給-1000円）" style="margin-top:5px;">
+                    <input type="text" name="probationCondition" placeholder="期間中の条件（例：日給-1000円）" style="margin-top:15px;">
                 </div>
             </div>
 
@@ -318,12 +331,12 @@
                     <label><input type="checkbox" name="workplaceTags" value="車通勤可"> 車通勤可</label>
                     <label><input type="checkbox" name="workplaceTags" value="直行直帰OK"> 直行直帰OK</label>
                 </div>
-                <div class="checkbox-group" style="margin-top:10px;">
+                <div class="checkbox-group" style="margin-top:15px;">
                     <label><input type="checkbox" name="allowances" value="家族手当"> 家族手当</label>
                     <label><input type="checkbox" name="allowances" value="資格手当"> 資格手当</label>
                     <label><input type="checkbox" name="allowances" value="皆勤手当"> 皆勤手当</label>
                 </div>
-                <input type="text" name="allowanceNote" placeholder="手当詳細" style="margin-top:5px;">
+                <input type="text" name="allowanceNote" placeholder="手当詳細" style="margin-top:15px;">
             </div>
 
             <div class="form-group">
@@ -334,16 +347,16 @@
                     <option value="屋内禁煙">屋内禁煙（屋外喫煙所あり）</option>
                     <option value="屋内喫煙可">屋内喫煙可</option>
                 </select>
-                <input type="text" name="smokingNote" placeholder="補足（例：現場による）" style="margin-top:5px;">
+                <input type="text" name="smokingNote" placeholder="補足（例：現場による）" style="margin-top:15px;">
             </div>
 
             <div class="btn-group">
-                <button type="button" class="btn btn-prev" onclick="prevStep(3)">戻る</button>
-                <button type="button" class="btn btn-next" onclick="tryNextStep(5)">次へ<br>（GBP設定）</button>
+                <button type="button" class="btn btn-outline" onclick="prevStep(3)">戻る</button>
+                <button type="button" class="btn btn-primary" onclick="tryNextStep(5)">次へ<br>（GBP設定）</button>
             </div>
         </section>
 
-        <section id="section-5" class="form-section">
+        <section id="section-5" class="form-section glass-panel">
             <h2>5. GBP詳細設定</h2>
             
             <div class="form-group">
@@ -355,7 +368,18 @@
                 </div>
             </div>
 
-            <div id="gbpExistingDetails" style="display:none; margin-bottom:20px;">
+            <div id="gbpExistingDetails" class="details-box" style="display:none; margin-bottom:25px;">
+                <div style="margin-bottom: 20px; text-align: center;">
+                    <p style="font-size: 0.9rem; color: #aaa; margin-bottom:10px;">
+                        招待手順がご不明な場合は、以下の動画をご確認ください。
+                    </p>
+                    <a href="gbp-invite.html" target="_blank" rel="noopener noreferrer" class="btn btn-primary" 
+                       style="text-decoration:none; font-size:0.9rem; padding:10px 20px; display:inline-flex; width:auto;"
+                       onclick="if(window.gtag) gtag('event', 'gbp_invite_video_open');">
+                       ▶ GBP招待（管理者追加） 1分動画で確認
+                    </a>
+                </div>
+
                 <div class="form-group">
                     <label>既存マップURL</label>
                     <input type="url" name="gbpMapUrl" placeholder="https://maps.app.goo.gl/...">
@@ -383,14 +407,14 @@
                     <option value="非店舗型（出張サービス）">非店舗型（出張メイン・住所非表示推奨）</option>
                     <option value="店舗型">店舗型（事務所に来客あり・住所表示）</option>
                 </select>
-                <div style="margin-top:10px;">
+                <div style="margin-top:15px;">
                     住所表示：
                     <select name="gbpShowAddress">
                         <option value="表示">表示する</option>
                         <option value="非表示">非表示にする（自宅兼事務所など）</option>
                     </select>
                 </div>
-                <div style="margin-top:10px;">
+                <div style="margin-top:15px;">
                     サービス提供地域（出張範囲）：
                     <textarea name="gbpServiceAreas" rows="2" placeholder="例：加古川市、高砂市、姫路市（最大20まで）"></textarea>
                 </div>
@@ -399,22 +423,22 @@
             <div class="form-group">
                 <label>プロフィール設定</label>
                 <input type="text" name="gbpDisplayName" placeholder="マップ上の表示名（例：株式会社〇〇）">
-                <div style="margin-top:5px;">
+                <div style="margin-top:15px;">
                     メインカテゴリ：
                     <select id="gbpPrimaryCategory" name="gbpPrimaryCategory">
                         <option value="" disabled selected>選択してください</option>
                     </select>
                 </div>
-                <div style="margin-top:10px;">
+                <div style="margin-top:15px;">
                     営業時間：
                     <select name="gbpHoursPattern">
                         <option value="平日8-17時/土日休">平日8-17時/土日休</option>
                         <option value="月-土8-17時/日曜休">月-土8-17時/日曜休</option>
                         <option value="その他">その他</option>
                     </select>
-                    <input type="text" name="gbpHoursNote" placeholder="営業時間の補足" style="margin-top:5px;">
+                    <input type="text" name="gbpHoursNote" placeholder="営業時間の補足" style="margin-top:15px;">
                 </div>
-                <input type="url" name="gbpWebsiteUrl" placeholder="WebサイトURL（あれば）" style="margin-top:10px;">
+                <input type="url" name="gbpWebsiteUrl" placeholder="WebサイトURL（あれば）" style="margin-top:15px;">
             </div>
 
             <div class="form-group">
@@ -423,10 +447,11 @@
             </div>
 
             <div class="form-group">
-               <label>会社のロゴ・過去の施工写真（あれば）</label>
-               <input type="url" name="photoFolderUrl" placeholder="Google Drive等のURL（空欄でOK）">
-               <p class="note">※メインの写真は当日、私が現地で撮影します。もしロゴデータや使いたい過去写真があれば入力してください。</p>
-                <div style="margin-top:10px;">
+               <label>会社のロゴ・過去の施工写真</label>
+               <input type="hidden" name="photoFolderUrl" value="【公式LINEで回収】">
+               <p class="note-alert">※ロゴ・写真素材は、このフォーム送信後に公式LINEで回収します。（ここでは入力不要です）</p>
+               
+               <div id="gbpVideoArea" style="margin-top:15px;">
                     動画認証の可否：
                     <div class="radio-group">
                         <label><input type="radio" name="gbpVideoVerificationPossible" value="できる"> できる（現地で看板等を動画撮影可）</label>
@@ -436,7 +461,7 @@
                 </div>
             </div>
 
-            <div class="form-group">
+            <div id="gbpMailArea" class="form-group">
                 <label>郵送確認 <span class="badge-imp">重要</span></label>
                 <select name="gbpMailReceivable" id="gbpMailReceivable" data-critical="true">
                     <option value="" disabled selected>選択してください</option>
@@ -447,37 +472,44 @@
                 <p id="mailWarning" class="note-alert" style="display:none;">※ 届かない場合、オーナー認証が進まない可能性があります。電話代筆時にご相談ください。</p>
             </div>
 
-           <div class="privacy-box" style="margin-top:20px; font-size:0.8rem; color:#666; background:#f9f9f9; padding:10px; border-radius:4px;">
-                <p style="margin:0;">
+           <div class="privacy-box glass-panel" style="margin-top:30px; font-size:0.8rem; border:1px solid rgba(255,255,255,0.1);">
+                <p style="margin:0; color: #aaa;">
                     <strong>個人情報の取り扱いについて：</strong><br>
                     ご入力いただいた情報は、求人原稿の作成およびGoogleマップ登録代行業務のみに利用します。
-                    詳細は<a href="privacy.html" target="_blank" style="color:#0056b3; text-decoration:underline;">プライバシーポリシー</a>をご確認ください。<br>
+                    詳細は<a href="privacy.html" target="_blank" style="color:var(--text-main); text-decoration:underline;">プライバシーポリシー</a>をご確認ください。<br>
                     「すべて送信する」を押すことで、これらに同意したものとみなします。
                 </p>
             </div>
 
             <div class="btn-group">
-                <button type="button" class="btn btn-prev" onclick="prevStep(4)">戻る</button>
-                <button type="submit" class="btn btn-submit" id="submitBtn">すべて送信する</button>
+                <button type="button" class="btn btn-outline" onclick="prevStep(4)">戻る</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">すべて送信する</button>
             </div>
         </section>
     </form>
 </main>
 
 <footer class="footer">
-    <p>入力が難しい場合はお電話ください。<br>
-    <a href="tel:09042931035" class="tel-link">TEL:090-4293-1035（代筆します）</a></p>
+  <div class="container">
+    <p>
+      入力が難しい場合は、お気軽にご連絡ください。<br>
+      ご連絡は<strong>電話・LINE・メール</strong>のいずれでも可能です。<br>
+      画像・ロゴ・写真などの素材は<strong>公式LINEで回収</strong>します（このフォームでは回収しません）。
+    </p>
+    <a href="tel:050-1784-7183" class="tel-link">TEL：050-1784-7183</a>
+  </div>
 </footer>
 
+
 <div id="confirmModal" class="modal-overlay" style="display:none;">
-    <div class="modal-content">
+    <div class="modal-content glass-panel">
         <h3 class="modal-title">未入力項目があります</h3>
         <p class="modal-text">以下の項目が入力されていません。<br>
         「不明・後で確認」として次へ進みますか？</p>
         <div id="modalList" class="modal-list"></div>
         <div class="modal-buttons">
-            <button class="btn-modal btn-cancel" onclick="closeModal()">入力を続ける</button>
-            <button class="btn-modal btn-ok" onclick="confirmNext()">後で確認にする</button>
+            <button class="btn btn-modal btn-cancel" onclick="closeModal()">入力を続ける</button>
+            <button class="btn btn-modal btn-ok" onclick="confirmNext()">後で確認にする</button>
         </div>
     </div>
 </div>
