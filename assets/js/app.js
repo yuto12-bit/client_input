@@ -156,6 +156,11 @@ function setupEventListeners() {
             if(warn) warn.style.display = e.target.value === '届かない' ? 'block' : 'none';
         });
     }
+    
+    // Step1 GBP認証状況監視
+    document.querySelectorAll('input[name="gbpVerifiedStatus"]').forEach(r => r.addEventListener('change', (e) => {
+        toggleAddressArea(e.target.value === '完了済み', {save: true});
+    }));
 
     // フォーム全体の変更監視
     const form = document.getElementById('hiringForm');
@@ -166,8 +171,6 @@ function setupEventListeners() {
 
 // 動的要素（書き換わる部分）へのイベント登録
 function setupDynamicListeners() {
-    // 資格の排他制御は削除済み（複数選択OK）
-
     // NG作業の排他制御
     setupExclusiveNone('workNoGo', '特になし');
     setupExclusiveNone('workNoGo', '特になし（何でもやる）');
@@ -194,10 +197,21 @@ window.toggleProbation = function(isYes, opts = { save: true }) {
     if (opts.save) saveFormData();
     updateProgress();
 };
+
 window.toggleContract = function(isLimited, opts = { save: true }) {
     const wrap = document.getElementById('contractDetails');
     if(wrap) {
         wrap.style.display = isLimited ? 'block' : 'none';
+        
+        const limitInput = document.getElementById('renewalLimit');
+        if (limitInput) {
+            if (isLimited) {
+                limitInput.setAttribute('data-critical', 'true');
+            } else {
+                limitInput.removeAttribute('data-critical');
+            }
+        }
+
         if (!isLimited) {
             const s = document.querySelector('input[name="contractStartDate"]');
             const e = document.querySelector('input[name="contractEndDate"]');
@@ -220,11 +234,84 @@ window.toggleFixedOvertime = function(has, opts = { save: true }) {
     if (opts.save) saveFormData();
     updateProgress();
 };
+
+// 【改修】GBP有無に応じて「動画認証」「郵送確認」も制御する
 window.toggleGbpInput = function(exists, opts = { save: true }) {
-    const wrap = document.getElementById('gbpExistingDetails');
-    if (wrap) wrap.style.display = exists ? 'block' : 'none';
+    // 1. 既存マップURL入力欄
+    const existingWrap = document.getElementById('gbpExistingDetails');
+    if (existingWrap) existingWrap.style.display = exists ? 'block' : 'none';
     const u = document.querySelector('input[name="gbpMapUrl"]');
     if (!exists && u) u.value = '';
+    
+    // 2. 動画認証エリア (ID: gbpVideoArea)
+    const videoArea = document.getElementById('gbpVideoArea');
+    if (videoArea) videoArea.style.display = exists ? 'none' : 'block';
+    
+    // 3. 郵送確認エリア (ID: gbpMailArea)
+    const mailArea = document.getElementById('gbpMailArea');
+    const mailSelect = document.getElementById('gbpMailReceivable');
+    if (mailArea) mailArea.style.display = exists ? 'none' : 'block';
+
+    // 4. バリデーション回避用のダミー値セット/クリア
+    if (exists) {
+        // 既存ありの場合：動画・郵送は不要 -> ダミー値をセットして必須解除
+        // 動画はラジオボタンなので選択を外す or 無視（ラジオは必須属性がないので放置でもOKだが、一応）
+        const videos = document.querySelectorAll('input[name="gbpVideoVerificationPossible"]');
+        videos.forEach(v => v.checked = false); // クリア
+        
+        // 郵送確認は必須(data-critical)なので、属性を外して値を埋める
+        if (mailSelect) {
+            mailSelect.removeAttribute('data-critical');
+            // valueにダミーを入れておかないと、戻ったときに未選択に見えるが
+            // hiddenなのでユーザーは見えない。submit時は空文字だと困る？
+            // GAS側が空文字許容ならいいが、一応埋める
+            // selectなので、optionにない値は入れにくいが、value強制書き換え
+            // または、<option value="不要" selected> を動的追加する手もあるが
+            // ここではシンプルに required 属性(data-critical)を外すだけで、値は空で送る
+            // もしGAS側で必須チェックしてるなら「不明」などを選ばせる必要がある
+            // 安全策：data-criticalを外せば handleSubmit でのエラーは出ない
+            mailSelect.value = ""; // リセット
+        }
+    } else {
+        // 既存なし(or不明)の場合：表示して必須化
+        if (mailSelect) {
+            mailSelect.setAttribute('data-critical', 'true');
+        }
+    }
+
+    if (opts.save) saveFormData();
+    updateProgress();
+};
+
+window.toggleAddressArea = function(isVerified, opts = { save: true }) {
+    const area = document.getElementById('addressInputArea');
+    const zip = document.querySelector('input[name="zipCode"]');
+    const addr = document.querySelector('input[name="address"]');
+
+    if (area) {
+        area.style.display = isVerified ? 'none' : 'block';
+    }
+
+    if (isVerified) {
+        if(zip) {
+            zip.removeAttribute('data-critical');
+            zip.value = "【認証済み】";
+        }
+        if(addr) {
+            addr.removeAttribute('data-critical');
+            addr.value = "【認証済みのため不要】";
+        }
+    } else {
+        if(zip) {
+            zip.setAttribute('data-critical', 'true');
+            if(zip.value === "【認証済み】") zip.value = "";
+        }
+        if(addr) {
+            addr.setAttribute('data-critical', 'true');
+            if(addr.value === "【認証済みのため不要】") addr.value = "";
+        }
+    }
+
     if (opts.save) saveFormData();
     updateProgress();
 };
@@ -300,8 +387,6 @@ function goToStep(stepNum) {
     updateProgress();
 }
 
-// 【修正必須対応】未入力項目の検出
-// ラベルの重複除去はここでは行わず、全未入力要素を返す
 function getEmptyFields(stepNum) {
     const section = document.getElementById(`section-${stepNum}`);
     if(!section) return [];
@@ -330,18 +415,13 @@ function getEmptyFields(stepNum) {
         }
     });
 
-    return rawEmptyList; // 重複ありのまま全件返す
+    return rawEmptyList;
 }
 
-// 【修正必須対応】モーダル処理
 function showModal(fields, targetStepNum) {
     const modal = document.getElementById('confirmModal');
     const list = document.getElementById('modalList');
-    
-    // 1. スキップ対象のnameは「重複ありの全件」を保持する
     pendingEmptyFieldNames = fields.map(f => f.name);
-    
-    // 2. モーダル表示用だけラベル重複を除去する
     const seenLabels = new Set();
     const uniqueLabels = [];
     fields.forEach(f => {
@@ -350,9 +430,7 @@ function showModal(fields, targetStepNum) {
             uniqueLabels.push(f.label);
         }
     });
-
     if(list) list.innerHTML = uniqueLabels.map(label => `<div>• ${label}</div>`).join('');
-    
     pendingStep = targetStepNum;
     if(modal) modal.style.display = 'flex';
 }
@@ -364,7 +442,6 @@ function closeModal() {
     pendingEmptyFieldNames = [];
 }
 
-// 安全なlocalStorage読み込みヘルパー
 function getSafeStoredList(key) {
     try {
         const s = localStorage.getItem(key);
@@ -375,24 +452,16 @@ function getSafeStoredList(key) {
     }
 }
 
-// 「後で確認」確定時の永続化
 function confirmNext() {
     if (pendingStep) {
-        // 安全に読み込み
         let skippedList = getSafeStoredList('hiringFormSkipped');
-        
-        // 今回スキップした項目を追加（重複排除）
         skippedList = [...new Set([...skippedList, ...pendingEmptyFieldNames])];
-        
-        // 保存
         localStorage.setItem('hiringFormSkipped', JSON.stringify(skippedList));
-        
         goToStep(pendingStep);
         closeModal();
     }
 }
 
-// 保存・復元
 function saveFormData() {
     const form = document.getElementById('hiringForm');
     const data = {};
@@ -446,7 +515,13 @@ function loadFormData() {
         const overtimeChecked = document.querySelector('input[name="fixedOvertime"]:checked');
         if (overtimeChecked) toggleFixedOvertime(overtimeChecked.value === 'あり', { save: false });
         const gbpChecked = document.querySelector('input[name="gbpExists"]:checked');
+        
+        // 【修正】GBP表示状態の復元
         if (gbpChecked) toggleGbpInput(gbpChecked.value === 'はい', { save: false });
+        
+        const verifiedChecked = document.querySelector('input[name="gbpVerifiedStatus"]:checked');
+        if (verifiedChecked) toggleAddressArea(verifiedChecked.value === '完了済み', {save: false});
+        
     } catch(e) {
         console.warn('Error loading form data', e);
     }
@@ -459,7 +534,9 @@ async function handleSubmit(e) {
     // 重要項目の最終チェック
     const criticals = form.querySelectorAll('[data-critical="true"]');
     let criticalError = false;
-    criticals.forEach(el => { if (!el.value.trim()) criticalError = true; });
+    criticals.forEach(el => { 
+        if (el.offsetParent !== null && !el.value.trim()) criticalError = true; 
+    });
     if (criticalError) {
         alert('【重要】連絡先などの必須項目が未入力です。確認してください。');
         return;
@@ -469,9 +546,7 @@ async function handleSubmit(e) {
     btn.disabled = true;
     btn.textContent = '送信中...';
 
-    // スキップされた項目のリストを安全に取得
     const skippedList = getSafeStoredList('hiringFormSkipped');
-
     const formData = new FormData(e.target);
     const jsonData = {};
     for (let [key, value] of formData.entries()) {
@@ -485,7 +560,6 @@ async function handleSubmit(e) {
         if (Array.isArray(jsonData[key])) jsonData[key] = jsonData[key].join(', ');
     });
 
-    // 空欄補完（スキップリストにある項目、または可視状態の未入力項目）
     [...form.elements].forEach(el => {
         if (el.name && !jsonData[el.name] && el.type !== 'submit' && el.type !== 'button') {
             if (skippedList.includes(el.name) || el.offsetParent !== null) {
