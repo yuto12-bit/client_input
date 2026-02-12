@@ -54,6 +54,7 @@ function doPost(e) {
     const hireImmediatelyText = data.hireImmediately ? 'あり' : 'なし';
 
     const row = [
+      // --- 既存フィールド ---
       ts,
       fmt_(data.companyName),
       fmt_(data.zipCode),
@@ -145,7 +146,27 @@ function doPost(e) {
 
       fmt_(data.gbpTopServices),
       fmt_(data.photoFolderUrl),
-      fmt_(data.gbpVideoVerificationPossible)
+      fmt_(data.gbpVideoVerificationPossible),
+
+      // --- 追加フィールド（末尾追記） ---
+      fmt_(data.recruitingNow),
+      fmt_(data.jobChannels),
+      fmt_(data.jobChannelsOther),
+      fmt_(data.jobUrl1),
+      fmt_(data.jobUrl2),
+      fmt_(data.jobUrl3),
+      fmt_(data.jobPaidStatus),
+      fmt_(data.jobPaidNote),
+      fmt_(data.hasRecruitLp),
+      fmt_(data.recruitLpUrl),
+      fmt_(data.lpHostingType),
+      fmt_(data.ga4Status),
+      fmt_(data.ga4PropertyUrl),
+      fmt_(data.ga4InviteEmail),
+      fmt_(data.dnsOwner),
+      fmt_(data.dnsContactNote),
+      fmt_(data.casePermission),
+      fmt_(data.agreePrivacy)
     ];
 
     const before = sheet.getLastRow();

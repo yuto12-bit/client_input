@@ -400,3 +400,31 @@ input[type="radio"], input[type="checkbox"] {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ==========================================================================
+   ADDITIONAL STYLES (Patch for new items)
+   ========================================================================== */
+
+/* Privacy Policy Box Alignment */
+.privacy-box label {
+  /* Override default block label to prevent misalignment in flex container */
+  margin-bottom: 0;
+  width: 100%;
+}
+
+.privacy-box a {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.privacy-box p {
+  line-height: 1.5;
+}
+
+/* Ensure proper spacing for dynamically toggled inputs */
+/* Used for inputs displayed via JS (display: block) */
+.form-group input[style*="block"], 
+.form-group select[style*="block"],
+.form-group textarea[style*="block"] {
+  margin-top: 15px; 
+}

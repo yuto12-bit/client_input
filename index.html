@@ -63,6 +63,107 @@
             </div>
 
             <div class="form-group">
+                <label>現在、求人の募集を行っていますか？</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="recruitingNow" value="はい"> はい</label>
+                    <label><input type="radio" name="recruitingNow" value="いいえ"> いいえ</label>
+                    <label><input type="radio" name="recruitingNow" value="不明"> 不明</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>現在使っている求人の入口（複数選択）</label>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" name="jobChannels" value="Indeed"> Indeed</label>
+                    <label><input type="checkbox" name="jobChannels" value="Airワーク"> Airワーク</label>
+                    <label><input type="checkbox" name="jobChannels" value="自社HP採用ページ"> 自社HP採用ページ</label>
+                    <label><input type="checkbox" name="jobChannels" value="みんジョブ等の求人サイト"> みんジョブ等の求人サイト</label>
+                    <label><input type="checkbox" name="jobChannels" value="SNS"> SNS</label>
+                    <label><input type="checkbox" name="jobChannels" value="紹介"> 紹介</label>
+                    <label><input type="checkbox" name="jobChannels" value="不明"> 不明</label>
+                    <label>
+                        <input type="checkbox" name="jobChannels" value="その他" onchange="document.getElementById('jobChannelsOther').style.display = this.checked ? 'block' : 'none'">
+                        その他
+                    </label>
+                </div>
+                <input type="text" id="jobChannelsOther" name="jobChannelsOther" placeholder="その他の媒体名" style="display:none; margin-top:15px;">
+            </div>
+
+            <div class="form-group">
+                <label>現在の求人URL（最大3本）</label>
+                <input type="url" name="jobUrl1" placeholder="URL 1（例：Indeedの掲載ページなど）">
+                <input type="url" name="jobUrl2" placeholder="URL 2" style="margin-top:10px;">
+                <input type="url" name="jobUrl3" placeholder="URL 3" style="margin-top:10px;">
+            </div>
+
+            <div class="form-group">
+                <label>求人の課金状況</label>
+                <select name="jobPaidStatus" onchange="document.getElementById('jobPaidNote').style.display = (this.value === '課金あり') ? 'block' : 'none'">
+                    <option value="" disabled selected>選択してください</option>
+                    <option value="課金あり">課金あり</option>
+                    <option value="無料掲載">無料掲載</option>
+                    <option value="不明">不明</option>
+                </select>
+                <input type="text" id="jobPaidNote" name="jobPaidNote" placeholder="月いくら/媒体名など" style="display:none; margin-top:15px;">
+            </div>
+
+            <div class="form-group">
+                <label>採用専用LP（ランディングページ）の有無</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="hasRecruitLp" value="ある" onclick="document.getElementById('recruitLpDetails').style.display='block'"> ある</label>
+                    <label><input type="radio" name="hasRecruitLp" value="ない" onclick="document.getElementById('recruitLpDetails').style.display='none'"> ない</label>
+                    <label><input type="radio" name="hasRecruitLp" value="不明" onclick="document.getElementById('recruitLpDetails').style.display='none'"> 不明</label>
+                </div>
+                <div id="recruitLpDetails" style="display:none; margin-top:15px;">
+                    <input type="url" name="recruitLpUrl" placeholder="LPのURL">
+                    <div style="margin-top:15px;">
+                        公開場所：
+                        <select name="lpHostingType">
+                            <option value="" disabled selected>選択してください</option>
+                            <option value="既存ドメイン配下">既存ドメイン配下（recruit.〇〇 等）</option>
+                            <option value="新規ドメイン">新規ドメイン</option>
+                            <option value="不明">不明</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>GA4（アクセス解析）の導入状況</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="ga4Status" value="すでにある" onclick="document.getElementById('ga4Details').style.display='block'"> すでにある</label>
+                    <label><input type="radio" name="ga4Status" value="まだない" onclick="document.getElementById('ga4Details').style.display='none'"> まだない</label>
+                    <label><input type="radio" name="ga4Status" value="不明" onclick="document.getElementById('ga4Details').style.display='none'"> 不明</label>
+                </div>
+                <div id="ga4Details" style="display:none; margin-top:15px;">
+                    <input type="url" name="ga4PropertyUrl" placeholder="プロパティURL（管理画面のURL等、わかれば）">
+                    <input type="email" name="ga4InviteEmail" placeholder="追加するGoogleアカウント（招待先メールアドレス）" style="margin-top:15px;">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>ドメイン・DNS（サーバー）の管理担当</label>
+                <select name="dnsOwner">
+                    <option value="" disabled selected>選択してください</option>
+                    <option value="自社で管理">自社で管理</option>
+                    <option value="制作会社が管理">制作会社が管理</option>
+                    <option value="不明">不明</option>
+                </select>
+                <textarea name="dnsContactNote" rows="2" placeholder="管理会社名、担当者、電話番号など（連絡先が必要な場合に記入）" style="margin-top:15px;"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>制作実績としての公開可否</label>
+                <select name="casePermission">
+                    <option value="" disabled selected>選択してください</option>
+                    <option value="社名あり可">社名ありで公開可</option>
+                    <option value="匿名なら可">匿名（イニシャル等）なら可</option>
+                    <option value="不可">不可</option>
+                    <option value="不明">不明</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
                 <label>会社名（正式名称） <span class="badge-imp">重要</span></label>
                 <input type="text" name="companyName" placeholder="例：株式会社〇〇" data-critical="true">
             </div>
@@ -472,12 +573,15 @@
                 <p id="mailWarning" class="note-alert" style="display:none;">※ 届かない場合、オーナー認証が進まない可能性があります。電話代筆時にご相談ください。</p>
             </div>
 
-           <div class="privacy-box glass-panel" style="margin-top:30px; font-size:0.8rem; border:1px solid rgba(255,255,255,0.1);">
-                <p style="margin:0; color: #aaa;">
-                    <strong>個人情報の取り扱いについて：</strong><br>
-                    ご入力いただいた情報は、求人原稿の作成およびGoogleマップ登録代行業務のみに利用します。
-                    詳細は<a href="privacy.html" target="_blank" style="color:var(--text-main); text-decoration:underline;">プライバシーポリシー</a>をご確認ください。<br>
-                    「すべて送信する」を押すことで、これらに同意したものとみなします。
+            <div class="privacy-box glass-panel" style="margin-top:30px; border:1px solid rgba(255,255,255,0.1);">
+                <label style="display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                    <input type="checkbox" name="agreePrivacy" data-critical="true" style="margin-right: 10px; width: 20px; height: 20px;">
+                    <span style="font-weight: bold;">
+                        <a href="privacy.html" target="_blank" style="color:var(--text-main); text-decoration:underline;">プライバシーポリシー</a>に同意する
+                    </span>
+                </label>
+                <p style="margin:10px 0 0; color: #aaa; font-size:0.8rem; text-align: center;">
+                    ※求人原稿作成およびGoogleマップ登録代行業務のみに利用します。
                 </p>
             </div>
 

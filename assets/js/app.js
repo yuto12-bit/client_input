@@ -132,6 +132,30 @@ function setupEventListeners() {
         });
     }
 
+    // ▼▼▼ 追加項目のイベントリスナー ▼▼▼
+    
+    // (2) 求人入口「その他」
+    document.querySelectorAll('input[name="jobChannels"]').forEach(el => {
+        el.addEventListener('change', () => toggleJobChannels({ save: true }));
+    });
+
+    // (4) 課金状況
+    const jobPaidSelect = document.querySelector('select[name="jobPaidStatus"]');
+    if (jobPaidSelect) {
+        jobPaidSelect.addEventListener('change', () => toggleJobPaid({ save: true }));
+    }
+
+    // (5) 採用LP
+    document.querySelectorAll('input[name="hasRecruitLp"]').forEach(el => {
+        el.addEventListener('change', () => toggleRecruitLp({ save: true }));
+    });
+
+    // (6) GA4
+    document.querySelectorAll('input[name="ga4Status"]').forEach(el => {
+        el.addEventListener('change', () => toggleGa4({ save: true }));
+    });
+    // ▲▲▲ 追加項目のイベントリスナー終了 ▲▲▲
+
     // 保険の排他制御（固定要素なのでここで登録）
     setupExclusiveNone('insurance', 'なし');
 
@@ -177,6 +201,68 @@ function setupDynamicListeners() {
 }
 
 // UI制御関数
+
+// ▼▼▼ 追加項目の表示切替関数 ▼▼▼
+window.toggleJobChannels = function(opts = { save: true }) {
+    const othersCheckbox = document.querySelector('input[name="jobChannels"][value="その他"]');
+    const otherInput = document.getElementById('jobChannelsOther');
+    if (othersCheckbox && otherInput) {
+        const isChecked = othersCheckbox.checked;
+        otherInput.style.display = isChecked ? 'block' : 'none';
+        if (!isChecked) otherInput.value = '';
+    }
+    if (opts.save) saveFormData();
+    updateProgress();
+};
+
+window.toggleJobPaid = function(opts = { save: true }) {
+    const select = document.querySelector('select[name="jobPaidStatus"]');
+    const noteInput = document.getElementById('jobPaidNote');
+    if (select && noteInput) {
+        const isPaid = select.value === '課金あり';
+        noteInput.style.display = isPaid ? 'block' : 'none';
+        if (!isPaid) noteInput.value = '';
+    }
+    if (opts.save) saveFormData();
+    updateProgress();
+};
+
+window.toggleRecruitLp = function(opts = { save: true }) {
+    const radio = document.querySelector('input[name="hasRecruitLp"]:checked');
+    const details = document.getElementById('recruitLpDetails');
+    if (details) {
+        const isYes = radio && radio.value === 'ある';
+        details.style.display = isYes ? 'block' : 'none';
+        if (!isYes) {
+            const url = document.querySelector('input[name="recruitLpUrl"]');
+            const type = document.querySelector('select[name="lpHostingType"]');
+            if(url) url.value = '';
+            if(type) type.value = '';
+        }
+    }
+    if (opts.save) saveFormData();
+    updateProgress();
+};
+
+window.toggleGa4 = function(opts = { save: true }) {
+    const radio = document.querySelector('input[name="ga4Status"]:checked');
+    const details = document.getElementById('ga4Details');
+    if (details) {
+        const isYes = radio && radio.value === 'すでにある';
+        details.style.display = isYes ? 'block' : 'none';
+        if (!isYes) {
+            const url = document.querySelector('input[name="ga4PropertyUrl"]');
+            const email = document.querySelector('input[name="ga4InviteEmail"]');
+            if(url) url.value = '';
+            if(email) email.value = '';
+        }
+    }
+    if (opts.save) saveFormData();
+    updateProgress();
+};
+// ▲▲▲ 追加項目の表示切替関数終了 ▲▲▲
+
+
 function toggleInsuranceCondition(isChecked) {
     const input = document.getElementById('insuranceCondition');
     if(input) {
@@ -262,14 +348,6 @@ window.toggleGbpInput = function(exists, opts = { save: true }) {
         // 郵送確認は必須(data-critical)なので、属性を外して値を埋める
         if (mailSelect) {
             mailSelect.removeAttribute('data-critical');
-            // valueにダミーを入れておかないと、戻ったときに未選択に見えるが
-            // hiddenなのでユーザーは見えない。submit時は空文字だと困る？
-            // GAS側が空文字許容ならいいが、一応埋める
-            // selectなので、optionにない値は入れにくいが、value強制書き換え
-            // または、<option value="不要" selected> を動的追加する手もあるが
-            // ここではシンプルに required 属性(data-critical)を外すだけで、値は空で送る
-            // もしGAS側で必須チェックしてるなら「不明」などを選ばせる必要がある
-            // 安全策：data-criticalを外せば handleSubmit でのエラーは出ない
             mailSelect.value = ""; // リセット
         }
     } else {
@@ -521,6 +599,12 @@ function loadFormData() {
         
         const verifiedChecked = document.querySelector('input[name="gbpVerifiedStatus"]:checked');
         if (verifiedChecked) toggleAddressArea(verifiedChecked.value === '完了済み', {save: false});
+
+        // ▼▼▼ 追加項目の復元 ▼▼▼
+        toggleJobChannels({ save: false });
+        toggleJobPaid({ save: false });
+        toggleRecruitLp({ save: false });
+        toggleGa4({ save: false });
         
     } catch(e) {
         console.warn('Error loading form data', e);
@@ -531,14 +615,37 @@ async function handleSubmit(e) {
     e.preventDefault();
     const form = e.target;
     
-    // 重要項目の最終チェック
+    // ▼▼▼ 重要項目の最終チェック (修正版) ▼▼▼
     const criticals = form.querySelectorAll('[data-critical="true"]');
     let criticalError = false;
-    criticals.forEach(el => { 
-        if (el.offsetParent !== null && !el.value.trim()) criticalError = true; 
-    });
+    const checkedGroups = new Set(); // ラジオ/チェックボックスの重複チェック回避用
+
+    for (const el of criticals) {
+        // 非表示項目はスキップ
+        if (el.offsetParent === null) continue;
+
+        const name = el.name;
+        // ラジオ/チェックボックスの処理
+        if (el.type === 'radio' || el.type === 'checkbox') {
+            if (checkedGroups.has(name)) continue; // 既にチェック済みならスキップ
+            checkedGroups.add(name);
+
+            // 同一nameグループで1つでもチェックされていればOK
+            const checkedCount = form.querySelectorAll(`[name="${name}"]:checked`).length;
+            if (checkedCount === 0) {
+                criticalError = true;
+            }
+        } 
+        // テキスト/セレクトなどの処理
+        else {
+            if (!el.value.trim()) {
+                criticalError = true;
+            }
+        }
+    }
+
     if (criticalError) {
-        alert('【重要】連絡先などの必須項目が未入力です。確認してください。');
+        alert('【重要】プライバシーポリシーへの同意や、連絡先などの必須項目が未入力です。確認してください。');
         return;
     }
 
