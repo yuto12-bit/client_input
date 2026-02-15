@@ -139,6 +139,11 @@ function setupEventListeners() {
         el.addEventListener('change', () => toggleJobChannels({ save: true }));
     });
 
+    // 【追加】Airワーク利用状況
+    document.querySelectorAll('input[name="airworkStatus"]').forEach(el => {
+        el.addEventListener('change', () => toggleAirWork({ save: true }));
+    });
+
     // (4) 課金状況
     const jobPaidSelect = document.querySelector('select[name="jobPaidStatus"]');
     if (jobPaidSelect) {
@@ -215,6 +220,27 @@ window.toggleJobChannels = function(opts = { save: true }) {
     updateProgress();
 };
 
+// 【追加】Airワークの表示切替
+window.toggleAirWork = function(opts = { save: true }) {
+    const radio = document.querySelector('input[name="airworkStatus"]:checked');
+    const details = document.getElementById('airworkDetails');
+    if (details) {
+        // "使っている" または "不明" の場合に表示
+        const isVisible = radio && (radio.value === '使っている' || radio.value === '不明');
+        details.style.display = isVisible ? 'block' : 'none';
+        
+        if (!isVisible) {
+            // 非表示時は中身をクリア
+            const url = document.querySelector('input[name="airworkUrl"]');
+            const id = document.querySelector('input[name="airworkAdminId"]');
+            if(url) url.value = '';
+            if(id) id.value = '';
+        }
+    }
+    if (opts.save) saveFormData();
+    updateProgress();
+};
+
 window.toggleJobPaid = function(opts = { save: true }) {
     const select = document.querySelector('select[name="jobPaidStatus"]');
     const noteInput = document.getElementById('jobPaidNote');
@@ -244,17 +270,26 @@ window.toggleRecruitLp = function(opts = { save: true }) {
     updateProgress();
 };
 
+// 【修正】GA4の表示切替（項目拡張・不明対応）
 window.toggleGa4 = function(opts = { save: true }) {
     const radio = document.querySelector('input[name="ga4Status"]:checked');
     const details = document.getElementById('ga4Details');
     if (details) {
-        const isYes = radio && radio.value === 'すでにある';
-        details.style.display = isYes ? 'block' : 'none';
-        if (!isYes) {
+        // "すでにある" または "不明" の場合に表示
+        const isVisible = radio && (radio.value === 'すでにある' || radio.value === '不明');
+        details.style.display = isVisible ? 'block' : 'none';
+        
+        if (!isVisible) {
+            // 非表示時は中身をクリア
             const url = document.querySelector('input[name="ga4PropertyUrl"]');
-            const email = document.querySelector('input[name="ga4InviteEmail"]');
+            const mid = document.querySelector('input[name="ga4MeasurementId"]');
+            const admin = document.querySelector('input[name="ga4AdminEmail"]');
+            const invite = document.querySelector('input[name="ga4InviteEmail"]');
+            
             if(url) url.value = '';
-            if(email) email.value = '';
+            if(mid) mid.value = '';
+            if(admin) admin.value = '';
+            if(invite) invite.value = '';
         }
     }
     if (opts.save) saveFormData();
@@ -602,6 +637,7 @@ function loadFormData() {
 
         // ▼▼▼ 追加項目の復元 ▼▼▼
         toggleJobChannels({ save: false });
+        toggleAirWork({ save: false }); // 【追加】
         toggleJobPaid({ save: false });
         toggleRecruitLp({ save: false });
         toggleGa4({ save: false });

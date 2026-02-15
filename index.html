@@ -90,6 +90,26 @@
             </div>
 
             <div class="form-group">
+                <label>Airワーク 採用管理の利用状況</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="airworkStatus" value="使っている" onclick="document.getElementById('airworkDetails').style.display='block'"> 使っている</label>
+                    <label><input type="radio" name="airworkStatus" value="使っていない" onclick="document.getElementById('airworkDetails').style.display='none'"> 使っていない</label>
+                    <label><input type="radio" name="airworkStatus" value="不明" onclick="document.getElementById('airworkDetails').style.display='block'"> 不明</label>
+                </div>
+                <div id="airworkDetails" style="display:none; margin-top:15px; padding:15px; background:rgba(255,255,255,0.05); border-radius:8px;">
+                    <div style="margin-bottom: 15px; text-align: center;">
+                         <a href="airwork-invite.html" target="_blank" rel="noopener noreferrer" class="btn btn-primary" 
+                           style="text-decoration:none; font-size:0.85rem; padding:10px 15px; display:inline-flex; width:auto; border:1px solid rgba(255,255,255,0.2);">
+                           ▶ Airワーク招待手順（マニュアル）
+                        </a>
+                        <p style="font-size:0.8rem; color:#aaa; margin-top:5px;">※リクルートID（AirID）での招待が必要です</p>
+                    </div>
+                    <input type="url" name="airworkUrl" placeholder="Airワーク管理画面URL または 求人ページURL">
+                    <input type="text" name="airworkAdminId" placeholder="Airワーク管理者メールアドレス（AirID）" style="margin-top:15px;">
+                </div>
+            </div>
+
+            <div class="form-group">
                 <label>現在の求人URL（最大3本）</label>
                 <input type="url" name="jobUrl1" placeholder="URL 1（例：Indeedの掲載ページなど）">
                 <input type="url" name="jobUrl2" placeholder="URL 2" style="margin-top:10px;">
@@ -133,10 +153,18 @@
                 <div class="radio-group">
                     <label><input type="radio" name="ga4Status" value="すでにある" onclick="document.getElementById('ga4Details').style.display='block'"> すでにある</label>
                     <label><input type="radio" name="ga4Status" value="まだない" onclick="document.getElementById('ga4Details').style.display='none'"> まだない</label>
-                    <label><input type="radio" name="ga4Status" value="不明" onclick="document.getElementById('ga4Details').style.display='none'"> 不明</label>
+                    <label><input type="radio" name="ga4Status" value="不明" onclick="document.getElementById('ga4Details').style.display='block'"> 不明</label>
                 </div>
-                <div id="ga4Details" style="display:none; margin-top:15px;">
+                <div id="ga4Details" style="display:none; margin-top:15px; padding:15px; background:rgba(255,255,255,0.05); border-radius:8px;">
+                    <div style="margin-bottom: 15px; text-align: center;">
+                         <a href="ga4-invite.html" target="_blank" rel="noopener noreferrer" class="btn btn-primary" 
+                           style="text-decoration:none; font-size:0.85rem; padding:10px 15px; display:inline-flex; width:auto; border:1px solid rgba(255,255,255,0.2);">
+                           ▶ GA4招待・権限付与手順（マニュアル）
+                        </a>
+                    </div>
                     <input type="url" name="ga4PropertyUrl" placeholder="プロパティURL（管理画面のURL等、わかれば）">
+                    <input type="text" name="ga4MeasurementId" placeholder="Measurement ID (G-XXXXXXXXXX)" style="margin-top:15px;">
+                    <input type="email" name="ga4AdminEmail" placeholder="GA4管理者メールアドレス（現在の管理者）" style="margin-top:15px;">
                     <input type="email" name="ga4InviteEmail" placeholder="追加するGoogleアカウント（招待先メールアドレス）" style="margin-top:15px;">
                 </div>
             </div>

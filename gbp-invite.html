@@ -8,36 +8,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        /* 動画埋め込み用のレスポンシブコンテナ */
-        .video-container {
-            position: relative;
-            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-            height: 0;
-            overflow: hidden;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: #000;
-            margin-bottom: 20px;
-        }
-        .video-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        .step-list {
-            text-align: left;
-            margin-bottom: 30px;
-            padding-left: 20px;
-            color: var(--text-main);
-            font-size: 0.95rem;
-        }
-        .step-list li {
-            margin-bottom: 10px;
-        }
-    </style>
 </head>
 <body>
 
@@ -52,15 +22,10 @@
         <h2 style="font-size: 1.1rem; border-bottom:none; margin-bottom:15px;">Googleマップでの招待手順（約1分）</h2>
         
         <div class="video-container">
-            <iframe 
-                src="https://www.loom.com/embed/2be1eb9fcc70406485795faeb68cafaa" 
-                frameborder="0" 
-                webkitallowfullscreen 
-                mozallowfullscreen 
-                allowfullscreen 
-                loading="lazy"
-                title="GBP招待手順動画">
-            </iframe>
+            <video controls playsinline poster="assets/img/video-poster-gbp.jpg" preload="metadata">
+                <source src="assets/video/gbp-invite.mp4" type="video/mp4">
+                <p style="color:#fff; padding:20px;">お使いの環境では動画を再生できません。</p>
+            </video>
         </div>
 
         <div style="margin-bottom: 30px;">
@@ -72,12 +37,29 @@
                 <li>「追加」→ メールアドレスを入力 → 権限は<strong>「管理者」</strong>を選択して招待</li>
             </ol>
             <p class="note" style="margin-top:10px;">
-                ※動画が表示されない場合は<a href="https://www.loom.com/share/2be1eb9fcc70406485795faeb68cafaa" target="_blank" style="color:#4fc3f7; text-decoration:underline;">こちら（Loom公式サイト）</a>から直接ご覧ください。
+                ※動画が表示されない場合は<a href="assets/video/gbp-invite.mp4" target="_blank" style="color:#4fc3f7; text-decoration:underline;">こちら（動画ファイル）</a>を直接ご覧ください。
             </p>
         </div>
 
-        <div class="text-center">
-            <button type="button" class="btn btn-outline" onclick="window.close();" style="max-width: 200px;">閉じる</button>
+        <div class="register-block">
+            <h3 class="register-title">
+                まだGoogleマップに登録していない場合
+            </h3>
+            <p class="register-text">
+                以下の公式サイトから新規登録（オーナー確認）を行ってください。<br>
+                登録完了後、このページの手順で管理者を追加してください。<br>
+                <span style="font-size:0.8rem; color:#aaa;">※登録完了後に、元の入力フォームへ戻ってください。</span>
+            </p>
+            <a href="https://www.google.com/intl/ja_jp/business/" target="_blank" rel="noopener noreferrer" class="btn btn-outline" 
+               style="text-decoration:none; font-size:0.9rem; padding:10px 20px; display:inline-flex; width:auto; border-color: #93c5fd; color: #fff;">
+                Googleビジネスプロフィール公式サイト <span style="font-size:0.8em; margin-left:5px;">↗</span>
+            </a>
+        </div>
+        <div class="text-center" style="display:flex; flex-direction:column; align-items:center; gap:15px;">
+            <a href="index.html" class="btn btn-primary" style="text-decoration:none; max-width:300px; width:100%;">
+                入力フォームに戻る
+            </a>
+
         </div>
     </div>
 </main>

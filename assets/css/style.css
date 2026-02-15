@@ -428,3 +428,71 @@ input[type="radio"], input[type="checkbox"] {
 .form-group textarea[style*="block"] {
   margin-top: 15px; 
 }
+
+/* ==========================================================================
+   INVITE PAGES (gbp/ga4/airwork-invite.html)
+   ========================================================================== */
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: #000;
+  margin-bottom: 20px;
+}
+.video-container iframe,
+.video-container video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.video-placeholder {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #aaa;
+  font-size: 0.9rem;
+  background: #111;
+  line-height: 1.6;
+}
+.step-list {
+  text-align: left;
+  margin-bottom: 30px;
+  padding-left: 20px;
+  color: var(--text-main);
+  font-size: 0.95rem;
+}
+.step-list li {
+  margin-bottom: 10px;
+}
+.register-block {
+  margin-top: 40px; 
+  margin-bottom: 30px; 
+  padding: 20px; 
+  background: rgba(59, 130, 246, 0.1); 
+  border: 1px solid rgba(59, 130, 246, 0.3); 
+  border-radius: 8px;
+  text-align: center;
+}
+.register-title {
+  font-size: 1rem; 
+  color: #93c5fd; 
+  margin-top: 0; 
+  margin-bottom: 10px; 
+  font-weight: bold;
+}
+.register-text {
+  font-size: 0.9rem; 
+  color: #ccc; 
+  margin-bottom: 15px; 
+  line-height: 1.6; 
+  text-align: left;
+}
