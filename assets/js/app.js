@@ -133,13 +133,23 @@ function setupEventListeners() {
     }
 
     // ▼▼▼ 追加項目のイベントリスナー ▼▼▼
+
+    // GA4 利用状況（※JS側で確実に toggleGa4Input を発火させる）
+document.querySelectorAll('input[name="ga4Status"]').forEach(el => {
+  el.addEventListener('change', (e) => {
+    if (e.target.value === 'すでにある') toggleGa4Input('exist', { save: true });
+    else if (e.target.value === 'まだない') toggleGa4Input('none', { save: true });
+    else if (e.target.value === '不明') toggleGa4Input('unknown', { save: true });
+  });
+});
+
     
     // (2) 求人入口「その他」
     document.querySelectorAll('input[name="jobChannels"]').forEach(el => {
         el.addEventListener('change', () => toggleJobChannels({ save: true }));
     });
 
-    // 【追加】Airワーク利用状況
+    // Airワーク利用状況
     document.querySelectorAll('input[name="airworkStatus"]').forEach(el => {
         el.addEventListener('change', () => toggleAirWork({ save: true }));
     });
@@ -154,12 +164,6 @@ function setupEventListeners() {
     document.querySelectorAll('input[name="hasRecruitLp"]').forEach(el => {
         el.addEventListener('change', () => toggleRecruitLp({ save: true }));
     });
-
-    // (6) GA4
-    document.querySelectorAll('input[name="ga4Status"]').forEach(el => {
-        el.addEventListener('change', () => toggleGa4({ save: true }));
-    });
-    // ▲▲▲ 追加項目のイベントリスナー終了 ▲▲▲
 
     // 保険の排他制御（固定要素なのでここで登録）
     setupExclusiveNone('insurance', 'なし');
@@ -205,6 +209,25 @@ function setupDynamicListeners() {
     setupExclusiveNone('workNoGo', '特になし（何でもやる）');
 }
 
+function setDisabledWithin(rootEl, disabled) {
+  if (!rootEl) return;
+  rootEl.querySelectorAll('input, select, textarea').forEach(el => {
+    el.disabled = disabled;
+  });
+}
+
+function clearValuesWithin(rootEl) {
+  if (!rootEl) return;
+  rootEl.querySelectorAll('input, select, textarea').forEach(el => {
+    if (el.type === 'checkbox' || el.type === 'radio') {
+      el.checked = false;
+    } else {
+      el.value = '';
+    }
+  });
+}
+
+
 // UI制御関数
 
 // ▼▼▼ 追加項目の表示切替関数 ▼▼▼
@@ -220,26 +243,36 @@ window.toggleJobChannels = function(opts = { save: true }) {
     updateProgress();
 };
 
-// 【追加】Airワークの表示切替
 window.toggleAirWork = function(opts = { save: true }) {
-    const radio = document.querySelector('input[name="airworkStatus"]:checked');
-    const details = document.getElementById('airworkDetails');
-    if (details) {
-        // "使っている" または "不明" の場合に表示
-        const isVisible = radio && (radio.value === '使っている' || radio.value === '不明');
-        details.style.display = isVisible ? 'block' : 'none';
-        
-        if (!isVisible) {
-            // 非表示時は中身をクリア
-            const url = document.querySelector('input[name="airworkUrl"]');
-            const id = document.querySelector('input[name="airworkAdminId"]');
-            if(url) url.value = '';
-            if(id) id.value = '';
-        }
+  const radio = document.querySelector('input[name="airworkStatus"]:checked');
+  const details = document.getElementById('airworkDetails');
+  const airId = document.querySelector('input[name="airworkAdminId"]');
+
+  if (details) {
+    const isVisible = radio && (radio.value === '使っている' || radio.value === '不明');
+    details.style.display = isVisible ? 'block' : 'none';
+
+    // 追加：隠すなら値クリア＋無効化
+    if (!isVisible) {
+      const url = document.querySelector('input[name="airworkUrl"]');
+      if (url) url.value = '';
+      if (airId) airId.value = '';
+      setDisabledWithin(details, true);
+    } else {
+      setDisabledWithin(details, false);
     }
-    if (opts.save) saveFormData();
-    updateProgress();
+
+    // 追加：「必須」表示に合わせて、表示中だけ必須化（ここは運用方針で固定）
+    if (airId) {
+      if (isVisible) airId.setAttribute('data-critical', 'true');
+      else airId.removeAttribute('data-critical');
+    }
+  }
+
+  if (opts.save) saveFormData();
+  updateProgress();
 };
+
 
 window.toggleJobPaid = function(opts = { save: true }) {
     const select = document.querySelector('select[name="jobPaidStatus"]');
@@ -270,31 +303,51 @@ window.toggleRecruitLp = function(opts = { save: true }) {
     updateProgress();
 };
 
-// 【修正】GA4の表示切替（項目拡張・不明対応）
-window.toggleGa4 = function(opts = { save: true }) {
-    const radio = document.querySelector('input[name="ga4Status"]:checked');
-    const details = document.getElementById('ga4Details');
-    if (details) {
-        // "すでにある" または "不明" の場合に表示
-        const isVisible = radio && (radio.value === 'すでにある' || radio.value === '不明');
-        details.style.display = isVisible ? 'block' : 'none';
-        
-        if (!isVisible) {
-            // 非表示時は中身をクリア
-            const url = document.querySelector('input[name="ga4PropertyUrl"]');
-            const mid = document.querySelector('input[name="ga4MeasurementId"]');
-            const admin = document.querySelector('input[name="ga4AdminEmail"]');
-            const invite = document.querySelector('input[name="ga4InviteEmail"]');
-            
-            if(url) url.value = '';
-            if(mid) mid.value = '';
-            if(admin) admin.value = '';
-            if(invite) invite.value = '';
-        }
-    }
-    if (opts.save) saveFormData();
-    updateProgress();
+// 【GA4の表示切替：unknown対応】
+window.toggleGa4Input = function(state, opts = { save: true }) {
+  const details = document.getElementById('ga4Details');
+  const consent = document.getElementById('ga4ConsentArea');
+
+  const invite = document.querySelector('input[name="ga4InviteEmail"]');
+
+  if (state === 'exist') {
+    if (details) details.style.display = 'block';
+    setDisabledWithin(details, false);
+
+    if (consent) consent.style.display = 'none';
+    clearValuesWithin(consent);
+    setDisabledWithin(consent, true);
+
+    // 「必須」表示に合わせて、表示中だけ必須化
+    if (invite) invite.setAttribute('data-critical', 'true');
+
+  } else if (state === 'none') {
+    if (details) details.style.display = 'none';
+    clearValuesWithin(details);
+    setDisabledWithin(details, true);
+
+    if (consent) consent.style.display = 'block';
+    setDisabledWithin(consent, false);
+
+    if (invite) invite.removeAttribute('data-critical');
+
+  } else {
+    // unknown：両方非表示 + 値クリア + 無効化（＝過去値が送られない）
+    if (details) details.style.display = 'none';
+    clearValuesWithin(details);
+    setDisabledWithin(details, true);
+
+    if (consent) consent.style.display = 'none';
+    clearValuesWithin(consent);
+    setDisabledWithin(consent, true);
+
+    if (invite) invite.removeAttribute('data-critical');
+  }
+
+  if (opts.save) saveFormData();
+  updateProgress();
 };
+
 // ▲▲▲ 追加項目の表示切替関数終了 ▲▲▲
 
 
@@ -324,12 +377,24 @@ window.toggleContract = function(isLimited, opts = { save: true }) {
     if(wrap) {
         wrap.style.display = isLimited ? 'block' : 'none';
         
-        const limitInput = document.getElementById('renewalLimit');
-        if (limitInput) {
+        // 更新上限の有無ラジオボタンの必須制御
+        const limitRadios = document.querySelectorAll('input[name="renewalLimitExists"]');
+        limitRadios.forEach(r => {
             if (isLimited) {
-                limitInput.setAttribute('data-critical', 'true');
+                r.setAttribute('data-critical', 'true');
             } else {
-                limitInput.removeAttribute('data-critical');
+                r.removeAttribute('data-critical');
+                r.checked = false; 
+            }
+        });
+        
+        // 詳細テキストのクリアと非表示
+        const limitDetail = document.getElementById('renewalLimitDetail');
+        if (limitDetail) {
+            if (!isLimited) {
+                limitDetail.style.display = 'none';
+                limitDetail.value = '';
+                limitDetail.removeAttribute('data-critical');
             }
         }
 
@@ -342,6 +407,7 @@ window.toggleContract = function(isLimited, opts = { save: true }) {
     if (opts.save) saveFormData();
     updateProgress();
 };
+
 window.toggleFixedOvertime = function(has, opts = { save: true }) {
     const wrap = document.getElementById('overtimeDetails');
     if(wrap) {
@@ -356,7 +422,6 @@ window.toggleFixedOvertime = function(has, opts = { save: true }) {
     updateProgress();
 };
 
-// 【改修】GBP有無に応じて「動画認証」「郵送確認」も制御する
 window.toggleGbpInput = function(exists, opts = { save: true }) {
     // 1. 既存マップURL入力欄
     const existingWrap = document.getElementById('gbpExistingDetails');
@@ -637,10 +702,17 @@ function loadFormData() {
 
         // ▼▼▼ 追加項目の復元 ▼▼▼
         toggleJobChannels({ save: false });
-        toggleAirWork({ save: false }); // 【追加】
+        toggleAirWork({ save: false }); 
         toggleJobPaid({ save: false });
         toggleRecruitLp({ save: false });
-        toggleGa4({ save: false });
+        
+        // GA4状態復元
+        const ga4Checked = document.querySelector('input[name="ga4Status"]:checked');
+        if(ga4Checked) {
+            if(ga4Checked.value === 'すでにある') toggleGa4Input('exist', { save: false });
+            else if(ga4Checked.value === 'まだない') toggleGa4Input('none', { save: false });
+            else if(ga4Checked.value === '不明') toggleGa4Input('unknown', { save: false });
+        }
         
     } catch(e) {
         console.warn('Error loading form data', e);
@@ -651,29 +723,24 @@ async function handleSubmit(e) {
     e.preventDefault();
     const form = e.target;
     
-    // ▼▼▼ 重要項目の最終チェック (修正版) ▼▼▼
+    // 重要項目の最終チェック
     const criticals = form.querySelectorAll('[data-critical="true"]');
     let criticalError = false;
-    const checkedGroups = new Set(); // ラジオ/チェックボックスの重複チェック回避用
+    const checkedGroups = new Set(); 
 
     for (const el of criticals) {
-        // 非表示項目はスキップ
         if (el.offsetParent === null) continue;
 
         const name = el.name;
-        // ラジオ/チェックボックスの処理
         if (el.type === 'radio' || el.type === 'checkbox') {
-            if (checkedGroups.has(name)) continue; // 既にチェック済みならスキップ
+            if (checkedGroups.has(name)) continue; 
             checkedGroups.add(name);
 
-            // 同一nameグループで1つでもチェックされていればOK
             const checkedCount = form.querySelectorAll(`[name="${name}"]:checked`).length;
             if (checkedCount === 0) {
                 criticalError = true;
             }
-        } 
-        // テキスト/セレクトなどの処理
-        else {
+        } else {
             if (!el.value.trim()) {
                 criticalError = true;
             }
@@ -692,6 +759,8 @@ async function handleSubmit(e) {
     const skippedList = getSafeStoredList('hiringFormSkipped');
     const formData = new FormData(e.target);
     const jsonData = {};
+    
+    // FormDataの収集（チェックボックス対応）
     for (let [key, value] of formData.entries()) {
         if (jsonData[key]) {
             if (!Array.isArray(jsonData[key])) jsonData[key] = [jsonData[key]];
@@ -703,13 +772,32 @@ async function handleSubmit(e) {
         if (Array.isArray(jsonData[key])) jsonData[key] = jsonData[key].join(', ');
     });
 
+    // 【重要修正】未入力項目の補完処理（チェックボックス上書き防止）
     [...form.elements].forEach(el => {
-        if (el.name && !jsonData[el.name] && el.type !== 'submit' && el.type !== 'button') {
-            if (skippedList.includes(el.name) || el.offsetParent !== null) {
+        if (!el.name || el.type === 'submit' || el.type === 'button') return;
+        
+        // 既にデータがある場合はスキップ
+        if (Object.prototype.hasOwnProperty.call(jsonData, el.name)) return;
+
+
+        // モーダルで「後で確認」された項目は「不明」を入れる
+        if (skippedList.includes(el.name)) {
+            jsonData[el.name] = "【不明・後で確認】";
+            return;
+        }
+
+        // 表示されているテキスト入力等は、空なら「不明」扱いに
+        // ただしチェックボックス/ラジオは勝手に「不明」にしない（未チェック＝無しとして扱う）
+        if (el.offsetParent !== null) {
+            if (el.type !== 'checkbox' && el.type !== 'radio') {
                 jsonData[el.name] = "【不明・後で確認】";
             } else {
-                jsonData[el.name] = "";
+                // チェックボックス等は空のまま（GAS側で判定）
+                jsonData[el.name] = ""; 
             }
+        } else {
+            // 非表示項目は空文字
+            jsonData[el.name] = "";
         }
     });
 
@@ -721,8 +809,13 @@ async function handleSubmit(e) {
             mode: 'no-cors',
             keepalive: true
         });
-        localStorage.removeItem('hiringFormData');
-        localStorage.removeItem('hiringFormSkipped'); 
+        
+        // 【修正】送信成功時はバックアップを取り、フォームデータは消さない（Thanks画面側で消す、または再送用）
+        localStorage.setItem('hiringFormLastSent', JSON.stringify(jsonData));
+        localStorage.setItem('hiringFormLastSentAt', new Date().toISOString());
+        // localStorage.removeItem('hiringFormData'); // 安全のため消さない
+        // localStorage.removeItem('hiringFormSkipped');
+        
         window.location.href = 'thanks.html'; 
     } catch (error) {
         alert('送信エラーです。お電話でご連絡ください。');

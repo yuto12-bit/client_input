@@ -50,7 +50,7 @@
 
     <form id="hiringForm">
         <section id="section-1" class="form-section glass-panel active">
-            <h2>1. 基本情報</h2>
+            <h2>1. 基本情報・Web設定</h2>
             
             <div class="form-group industry-selector-box">
                 <label>▼ 対象業界（最初に選択してください） <span class="badge-imp">必須</span></label>
@@ -77,7 +77,7 @@
                     <label><input type="checkbox" name="jobChannels" value="Indeed"> Indeed</label>
                     <label><input type="checkbox" name="jobChannels" value="Airワーク"> Airワーク</label>
                     <label><input type="checkbox" name="jobChannels" value="自社HP採用ページ"> 自社HP採用ページ</label>
-                    <label><input type="checkbox" name="jobChannels" value="みんジョブ等の求人サイト"> タウンワーク等の求人サイト</label>
+                    <label><input type="checkbox" name="jobChannels" value="みんジョブ等の求人サイト"> みんジョブ等の求人サイト</label>
                     <label><input type="checkbox" name="jobChannels" value="SNS"> SNS</label>
                     <label><input type="checkbox" name="jobChannels" value="紹介"> 紹介</label>
                     <label><input type="checkbox" name="jobChannels" value="不明"> 不明</label>
@@ -90,7 +90,24 @@
             </div>
 
             <div class="form-group">
-                <label>Airワーク 採用管理の利用状況</label>
+                <label>採用LPの「応募ボタン」の飛び先 <span class="badge-imp">必須</span></label>
+                <p class="note" style="margin-bottom:10px;">※求職者が応募するメインの求人ページURLを入力してください。</p>
+                <input type="url" name="applyBtnUrl" placeholder="https://..." data-critical="true">
+                <div style="margin-top:15px;">
+                    媒体名：
+                    <select name="applyBtnMediaType" data-critical="true">
+                        <option value="" disabled selected>選択してください</option>
+                        <option value="Indeed">Indeed</option>
+                        <option value="Airワーク">Airワーク</option>
+                        <option value="タウンワーク">タウンワーク</option>
+                        <option value="自社フォーム">自社応募フォーム</option>
+                        <option value="その他">その他</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Airワーク 採用管理の利用状況 <span class="badge-imp">重要</span></label>
                 <div class="radio-group">
                     <label><input type="radio" name="airworkStatus" value="使っている" onclick="document.getElementById('airworkDetails').style.display='block'"> 使っている</label>
                     <label><input type="radio" name="airworkStatus" value="使っていない" onclick="document.getElementById('airworkDetails').style.display='none'"> 使っていない</label>
@@ -102,18 +119,19 @@
                            style="text-decoration:none; font-size:0.85rem; padding:10px 15px; display:inline-flex; width:auto; border:1px solid rgba(255,255,255,0.2);">
                            ▶ Airワーク招待手順（マニュアル）
                         </a>
-                        <p style="font-size:0.8rem; color:#aaa; margin-top:5px;">※リクルートID（AirID）での招待が必要です</p>
                     </div>
-                    <input type="url" name="airworkUrl" placeholder="Airワーク管理画面URL または 求人ページURL">
-                    <input type="text" name="airworkAdminId" placeholder="Airワーク管理者メールアドレス（AirID）" style="margin-top:15px;">
+                    <label class="sub-label">AirID（ログイン用メールアドレス） <span class="badge-imp">必須</span></label>
+                    <input type="email" name="airworkAdminId" placeholder="例：admin@example.com">
+                    
+                    <label class="sub-label">Airワーク管理画面URL（任意）</label>
+                    <input type="url" name="airworkUrl" placeholder="https://...">
                 </div>
             </div>
 
             <div class="form-group">
-                <label>現在の求人URL（最大3本）</label>
-                <input type="url" name="jobUrl1" placeholder="URL 1（例：Indeedの掲載ページなど）">
+                <label>その他 現在の求人URL（参考用）</label>
+                <input type="url" name="jobUrl1" placeholder="URL 1">
                 <input type="url" name="jobUrl2" placeholder="URL 2" style="margin-top:10px;">
-                <input type="url" name="jobUrl3" placeholder="URL 3" style="margin-top:10px;">
             </div>
 
             <div class="form-group">
@@ -149,12 +167,13 @@
             </div>
 
             <div class="form-group">
-                <label>GA4（アクセス解析）の導入状況</label>
+                <label>GA4（アクセス解析）の導入状況 <span class="badge-imp">重要</span></label>
                 <div class="radio-group">
-                    <label><input type="radio" name="ga4Status" value="すでにある" onclick="document.getElementById('ga4Details').style.display='block'"> すでにある</label>
-                    <label><input type="radio" name="ga4Status" value="まだない" onclick="document.getElementById('ga4Details').style.display='none'"> まだない</label>
-                    <label><input type="radio" name="ga4Status" value="不明" onclick="document.getElementById('ga4Details').style.display='block'"> 不明</label>
+                    <label><input type="radio" name="ga4Status" value="すでにある" onclick="toggleGa4Input('exist')"> すでにある</label>
+                    <label><input type="radio" name="ga4Status" value="まだない" onclick="toggleGa4Input('none')"> まだない</label>
+                    <label><input type="radio" name="ga4Status" value="不明" onclick="toggleGa4Input('unknown')"> 不明</label>
                 </div>
+                
                 <div id="ga4Details" style="display:none; margin-top:15px; padding:15px; background:rgba(255,255,255,0.05); border-radius:8px;">
                     <div style="margin-bottom: 15px; text-align: center;">
                          <a href="ga4-invite.html" target="_blank" rel="noopener noreferrer" class="btn btn-primary" 
@@ -162,15 +181,33 @@
                            ▶ GA4招待・権限付与手順（マニュアル）
                         </a>
                     </div>
-                    <input type="url" name="ga4PropertyUrl" placeholder="プロパティURL（管理画面のURL等、わかれば）">
-                    <input type="text" name="ga4MeasurementId" placeholder="Measurement ID (G-XXXXXXXXXX)" style="margin-top:15px;">
-                    <input type="email" name="ga4AdminEmail" placeholder="GA4管理者メールアドレス（現在の管理者）" style="margin-top:15px;">
-                    <input type="email" name="ga4InviteEmail" placeholder="追加するGoogleアカウント（招待先メールアドレス）" style="margin-top:15px;">
+                    <label class="sub-label">招待したGoogleアカウント（必須）</label>
+                    <input type="email" name="ga4InviteEmail" placeholder="権限付与したメールアドレス" style="margin-top:5px;">
+                    
+                    <label class="sub-label">管理画面URL または プロパティ名（任意）</label>
+                    <input type="text" name="ga4PropertyUrl" placeholder="URL または プロパティ名" style="margin-top:5px;">
+                </div>
+
+                <div id="ga4ConsentArea" style="display:none; margin-top:15px; padding:10px; border:1px solid #555; border-radius:8px;">
+                    <label class="custom-check" style="font-weight:bold; color:#93c5fd;">
+                        <input type="checkbox" name="ga4CreationConsent" value="同意する">
+                        当社でGA4を新規作成し、貴社へ管理権限をお渡しすることに同意します。
+                    </label>
                 </div>
             </div>
 
             <div class="form-group">
-                <label>ドメイン・DNS（サーバー）の管理担当</label>
+                <label>ドメイン・サーバー情報 <span class="badge-imp">必須</span></label>
+                <div style="margin-bottom:15px;">
+                    <p class="sub-label">既存ドメイン名（求人を設置するドメイン）</p>
+                    <input type="text" name="domainName" placeholder="例：example.co.jp" data-critical="true">
+                </div>
+                <div style="margin-bottom:15px;">
+                    <p class="sub-label">DNS管理サービス（ドメイン管理会社）</p>
+                    <input type="text" name="dnsServiceName" placeholder="例：お名前.com / Xserver / Cloudflare 等" data-critical="true">
+                </div>
+                
+                <p class="sub-label">管理担当者</p>
                 <select name="dnsOwner">
                     <option value="" disabled selected>選択してください</option>
                     <option value="自社で管理">自社で管理</option>
@@ -191,13 +228,24 @@
                 </select>
             </div>
             
+            <hr style="border:0; border-top:1px solid rgba(255,255,255,0.2); margin:40px 0;">
+
             <div class="form-group">
                 <label>会社名（正式名称） <span class="badge-imp">重要</span></label>
                 <input type="text" name="companyName" placeholder="例：株式会社〇〇" data-critical="true">
             </div>
 
             <div class="form-group">
-                <label>Googleマップ認証状況 <span class="badge-imp">必須</span></label>
+                <label>求人に掲載する勤務地（面接地） <span class="badge-imp">必須</span></label>
+                <div class="input-row">
+                    <input type="text" name="workLocationZip" placeholder="郵便番号（例:123-4567）" inputmode="numeric" style="width:140px;" data-critical="true">
+                    <input type="text" name="workLocationAddress" placeholder="住所（ビル名まで）" style="flex:1;" data-critical="true">
+                </div>
+                <p class="note">※求人票に表示される住所です。</p>
+            </div>
+
+            <div class="form-group" style="margin-top:40px; padding-top:20px; border-top:1px dashed rgba(255,255,255,0.2);">
+                <label>Googleマップ(GBP)認証状況 <span class="badge-imp">必須</span></label>
                 <div class="radio-group">
                     <label><input type="radio" name="gbpVerifiedStatus" value="未完了・不明" checked onclick="toggleAddressArea(false)"> 未完了・不明（ハガキ受取が必要）</label>
                     <label><input type="radio" name="gbpVerifiedStatus" value="完了済み" onclick="toggleAddressArea(true)"> 完了済み（ハガキ不要）</label>
@@ -206,8 +254,8 @@
 
             <div id="addressInputArea">
                 <div class="form-group">
-                    <label>ハガキが届く正確な住所 <span class="badge-imp">重要</span></label>
-                    <input type="text" name="zipCode" placeholder="郵便番号（例：123-4567）" inputmode="numeric" data-critical="true">
+                    <label>ハガキが届く正確な住所（上記と同じならコピー可） <span class="badge-imp">重要</span></label>
+                    <input type="text" name="zipCode" placeholder="郵便番号" inputmode="numeric" data-critical="true">
                     <input type="text" name="address" placeholder="住所（ビル名・部屋番号まで）" style="margin-top:15px;" data-critical="true">
                     <p class="note">※Googleマップのオーナー認証ハガキが届く場所</p>
                 </div>
@@ -285,7 +333,15 @@
                         契約更新：<select name="contractRenewal"><option value="あり">あり</option><option value="なし">なし</option></select>
                     </div>
                     <input type="text" name="renewalCriteria" placeholder="更新基準（例：勤務態度、会社の経営状況）" style="margin-top:15px;">
-                    <input type="text" name="renewalLimit" id="renewalLimit" placeholder="更新上限（例：通算5年まで、なし）" style="margin-top:15px;">
+                    
+                    <div style="margin-top:20px; border-top:1px dashed rgba(255,255,255,0.2); padding-top:15px;">
+                        <p class="sub-label">更新上限の有無：</p>
+                        <div class="radio-group" style="flex-direction:row; gap:20px;">
+                            <label style="width:auto;"><input type="radio" name="renewalLimitExists" value="なし" data-critical="true" onclick="document.getElementById('renewalLimitDetail').style.display='none'"> なし</label>
+                            <label style="width:auto;"><input type="radio" name="renewalLimitExists" value="あり" data-critical="true" onclick="document.getElementById('renewalLimitDetail').style.display='block'"> あり</label>
+                        </div>
+                        <input type="text" id="renewalLimitDetail" name="renewalLimitDetail" data-critical="true" placeholder="上限内容（例：通算5年まで、更新2回まで）" style="display:none; margin-top:10px;">
+                    </div>
                 </div>
             </div>
 
@@ -373,6 +429,14 @@
             </div>
 
             <div class="form-group">
+                <label>職場の強み・アピールポイント（3つ程度）</label>
+                <p class="note">※「残業が少ない」「人間関係が良い」「技術が学べる」など、箇条書きでOKです。</p>
+                <textarea name="jobAppeal" rows="3" placeholder="1. 
+2. 
+3. "></textarea>
+            </div>
+
+            <div class="form-group">
                 <label>採用条件</label>
                 <div class="input-row">
                     募集人数：<input type="number" name="openings" placeholder="例:2" style="width:50%;"> 名
@@ -426,12 +490,12 @@
                 <div class="checkbox-group">
                     <label><input type="checkbox" name="insurance" value="健康保険"> 健康保険</label>
                     <label><input type="checkbox" name="insurance" value="厚生年金"> 厚生年金</label>
-                    <label><input type="checkbox" name="insurance" value="雇用保険"> 雇用保険</label>
+                    <label><input type="checkbox" name="insurance" value="雇用保険">雇用保険</label>
                     <label><input type="checkbox" name="insurance" value="労災保険"> 労災保険</label>
                     <label><input type="checkbox" name="insurance" value="なし"> なし（未加入）</label>
                 </div>
                 <div style="margin-top:15px;">
-                    <label class="custom-check"><input type="checkbox" id="insuranceConditionToggle" name="insuranceConditionToggle"> 加入条件あり（正社員のみ等）</label>
+                    <label class="custom-check"><input type="checkbox" id="insuranceConditionToggle" name="insuranceConditionToggle" value="あり"> 加入条件あり（正社員のみ等）</label>
                     <input type="text" id="insuranceCondition" name="insuranceCondition" placeholder="条件を入力" style="display:none; margin-top:15px;">
                 </div>
             </div>
@@ -477,6 +541,18 @@
                     <option value="屋内喫煙可">屋内喫煙可</option>
                 </select>
                 <input type="text" name="smokingNote" placeholder="補足（例：現場による）" style="margin-top:15px;">
+            </div>
+
+            <div class="form-group">
+                <label>画像素材についての同意 <span class="badge-imp">必須</span></label>
+                <div class="privacy-box glass-panel" style="border:1px dashed rgba(255,255,255,0.3);">
+                    <label class="custom-check">
+                        <input type="checkbox" name="imageUsageConsent" value="同意する" data-critical="true">
+                        <span style="font-weight:bold;">
+                            写真素材の提供が間に合わない場合、貴社イメージに合う「フリー素材」や「AI生成画像」を仮で使用して制作進行することに同意します。
+                        </span>
+                    </label>
+                </div>
             </div>
 
             <div class="btn-group">
@@ -601,9 +677,9 @@
                 <p id="mailWarning" class="note-alert" style="display:none;">※ 届かない場合、オーナー認証が進まない可能性があります。電話代筆時にご相談ください。</p>
             </div>
 
-            <div class="privacy-box glass-panel" style="margin-top:30px; border:1px solid rgba(255,255,255,0.1);">
+           <div class="privacy-box glass-panel" style="margin-top:30px; border:1px solid rgba(255,255,255,0.1);">
                 <label style="display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                    <input type="checkbox" name="agreePrivacy" data-critical="true" style="margin-right: 10px; width: 20px; height: 20px;">
+                    <input type="checkbox" name="agreePrivacy" value="同意する" data-critical="true" style="margin-right: 10px; width: 20px; height: 20px;">
                     <span style="font-weight: bold;">
                         <a href="privacy.html" target="_blank" style="color:var(--text-main); text-decoration:underline;">プライバシーポリシー</a>に同意する
                     </span>

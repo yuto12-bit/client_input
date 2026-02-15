@@ -51,7 +51,14 @@ function doPost(e) {
         ? ('あり: ' + fmt_(data.probationPeriod) + ' ' + fmt_(data.probationCondition))
         : 'なし';
 
-    const hireImmediatelyText = data.hireImmediately ? 'あり' : 'なし';
+    // 【修正】判定を厳密化（HTML側で value="あり" を設定済み）
+    // 文字列が "あり" と完全一致する場合のみ "あり" とする
+    const hireImmediatelyText = (data.hireImmediately === 'あり') ? 'あり' : 'なし';
+
+    // 【修正】契約期間の上限有無と詳細を結合（穴B対策）
+    const renewalLimitText = (data.renewalLimitExists === 'あり')
+        ? ('あり: ' + fmt_(data.renewalLimitDetail))
+        : (data.renewalLimitExists === 'なし' ? 'なし' : '');
 
     const row = [
       // --- 既存フィールド ---
@@ -109,7 +116,7 @@ function doPost(e) {
       fmt_(data.contractEndDate),
       fmt_(data.contractRenewal),
       fmt_(data.renewalCriteria),
-      fmt_(data.renewalLimit),
+      renewalLimitText, // 【修正】ここで統合テキストを保存
 
       fmt_(data.jobScopeChange),
       fmt_(data.workplaceChangeScope),
@@ -148,7 +155,7 @@ function doPost(e) {
       fmt_(data.photoFolderUrl),
       fmt_(data.gbpVideoVerificationPossible),
 
-      // --- 追加フィールド（前回分） ---
+      // --- 追加フィールド ---
       fmt_(data.recruitingNow),
       fmt_(data.jobChannels),
       fmt_(data.jobChannelsOther),
@@ -168,19 +175,29 @@ function doPost(e) {
       fmt_(data.casePermission),
       fmt_(data.agreePrivacy),
 
-      // --- さらに追加（今回分：Airワーク & GA4拡張） ---
+      // --- さらに追加 ---
+      fmt_(data.applyBtnUrl),
+      fmt_(data.applyBtnMediaType),
       fmt_(data.airworkStatus),
       fmt_(data.airworkUrl),
       fmt_(data.airworkAdminId),
       fmt_(data.ga4MeasurementId),
-      fmt_(data.ga4AdminEmail)
+      fmt_(data.ga4AdminEmail),
+      fmt_(data.ga4CreationConsent),
+      fmt_(data.domainName),
+      fmt_(data.dnsServiceName),
+      fmt_(data.workLocationZip),
+      fmt_(data.workLocationAddress),
+      fmt_(data.renewalLimitExists),
+      fmt_(data.renewalLimitDetail),
+      fmt_(data.jobAppeal),
+      fmt_(data.imageUsageConsent)
     ];
 
     const before = sheet.getLastRow();
     sheet.appendRow(row);
     const after = sheet.getLastRow();
 
-    // 通知（失敗してもシート書き込みは優先させたいので try）
     try {
       if (ADMIN_EMAIL) {
         MailApp.sendEmail({
@@ -199,7 +216,6 @@ function doPost(e) {
       .setMimeType(ContentService.MimeType.JSON);
 
   } catch (err) {
-    // ここで止まると原因不明になるので、必ず返す
     return ContentService.createTextOutput(JSON.stringify({ result: 'error', error: String(err) }))
       .setMimeType(ContentService.MimeType.JSON);
   }
