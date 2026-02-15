@@ -148,7 +148,7 @@ function doPost(e) {
       fmt_(data.photoFolderUrl),
       fmt_(data.gbpVideoVerificationPossible),
 
-      // --- 追加フィールド（末尾追記） ---
+      // --- 追加フィールド（前回分） ---
       fmt_(data.recruitingNow),
       fmt_(data.jobChannels),
       fmt_(data.jobChannelsOther),
@@ -166,7 +166,14 @@ function doPost(e) {
       fmt_(data.dnsOwner),
       fmt_(data.dnsContactNote),
       fmt_(data.casePermission),
-      fmt_(data.agreePrivacy)
+      fmt_(data.agreePrivacy),
+
+      // --- さらに追加（今回分：Airワーク & GA4拡張） ---
+      fmt_(data.airworkStatus),
+      fmt_(data.airworkUrl),
+      fmt_(data.airworkAdminId),
+      fmt_(data.ga4MeasurementId),
+      fmt_(data.ga4AdminEmail)
     ];
 
     const before = sheet.getLastRow();
